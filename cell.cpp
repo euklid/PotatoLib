@@ -52,3 +52,7 @@ const double Cell::get_moment()
 
     return m_moment;
 }
+
+bool Cell::is_leaf() const {
+    return m_children.empty();
+}

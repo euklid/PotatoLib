@@ -2,6 +2,7 @@
 #include "tree.h"
 #include "element.h"
 #include "point.h"
+#include "fmm2d.h"
 
 int main()
 {

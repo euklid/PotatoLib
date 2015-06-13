@@ -6,10 +6,8 @@
 class Tree
 {
 public:
-    Tree(unsigned int dim) :
-    m_dim(dim)
-    {}
-
+    Tree();
+    Tree(unsigned int dim);
     virtual void set_root(Cell* root);
     virtual void build_tree(int max_elements) = 0;
 
@@ -22,6 +20,7 @@ public:
 private:
     unsigned int m_dim;
     Cell* m_root;
+    std::vector<Cell*> m_cells;
 };
 
 

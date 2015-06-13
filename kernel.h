@@ -7,7 +7,7 @@ class Kernel
 {
 public:
     Kernel(){}
-    double kernel(Element const & el1, Element const & el2) = 0;
+    virtual double kernel(Element const & el1, Element const & el2) = 0;
 };
 
 #endif

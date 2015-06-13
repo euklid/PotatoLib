@@ -8,6 +8,7 @@
 class Cell
 {
 public:
+    Cell();
     Cell(unsigned int dimension, unsigned int terms);
     virtual void calc_moment() = 0;
     virtual const double get_moment();
@@ -19,6 +20,7 @@ public:
     virtual unsigned int get_dimension() ;
     virtual Point const & get_center() ;
     virtual void set_center(Point const & center);
+    virtual bool is_leaf() const;
 
 private:
     std::vector<Cell*> m_children;
