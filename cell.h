@@ -14,6 +14,9 @@ public:
     virtual const double get_moment();
     virtual std::vector<Cell*> divide() = 0;
     virtual void set_elements(std::vector<Element*> const & elements);
+	virtual const std::vector<Element*>& get_elements() const;
+	virtual std::vector<Element*>& get_elements();
+	virtual unsigned int number_of_elements() const;
     virtual Cell* const get_father() const;
     virtual std::vector<Cell*> const & get_children() ;
     virtual unsigned int get_id() ;
@@ -21,6 +24,7 @@ public:
     virtual Point const & get_center() ;
     virtual void set_center(Point const & center);
     virtual bool is_leaf() const;
+    virtual bool contains_point(Point const & pt) const = 0;
 
 protected:
     std::vector<Cell*> m_children;

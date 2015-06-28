@@ -15,8 +15,8 @@ public:
     double & operator[](unsigned int coord);
     const double & operator[](unsigned int coord) const;
     unsigned int get_dimension() const;
-    Point operator-(Point const & p1);
-    Point operator+(Point const & p1);
+    Point operator-(Point const & p1) const;
+    Point operator+(Point const & p1) const;
     
 
 private:

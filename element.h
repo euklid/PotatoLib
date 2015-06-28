@@ -16,7 +16,7 @@ public:
 
     virtual Point get_position() = 0;
 
-private:
+protected:
     double m_value;
     unsigned int m_dim;
 };

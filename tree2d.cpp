@@ -21,10 +21,13 @@ void Tree2D::build_tree(int max_elements) {
     {
         Cell* cur_cell = undivided_cells.front();
         undivided_cells.pop();
-        std::vector<Cell*> new_cells = cur_cell->divide();
-        for (int i = 0; i<new_cells.size(); i++)
+		if(cur_cell->number_of_elements() > max_elements)
         {
-            undivided_cells.push(new_cells[i]);
+            std::vector<Cell*> new_cells = cur_cell->divide();
+            for (int i = 0; i<new_cells.size(); i++)
+            {
+                undivided_cells.push(new_cells[i]);
+            }
         }
     }
 }

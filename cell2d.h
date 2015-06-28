@@ -15,6 +15,7 @@ public:
     Cell2D(unsigned int terms, double size, Point const & center);
     virtual void calc_moment();
     virtual std::vector<Cell*> divide();
+    virtual bool contains_point(Point const & pt) const;
 private:
 
 };

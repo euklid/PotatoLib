@@ -36,7 +36,7 @@ double & Point::operator[](unsigned int coord)
     return m_coord[coord];
 }
 
-Point Point::operator+(const Point& p1) {
+Point Point::operator+(const Point& p1) const {
     assert(m_dim == p1.m_dim);
     Point res(m_dim);
     for(int i = 0; i<m_dim; i++) {
@@ -45,7 +45,7 @@ Point Point::operator+(const Point& p1) {
     return res;
 }
 
-Point Point::operator-(const Point& p1) {
+Point Point::operator-(const Point& p1) const {
     assert(m_dim == p1.m_dim);
     Point res(m_dim);
     for(int i = 0; i<m_dim; i++) {

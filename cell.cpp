@@ -7,13 +7,24 @@ Cell::Cell(unsigned int dimension, unsigned int terms, double size, Point const 
     m_center(center),
     has_moment(false)
 {
-    m_center = Point(dimension);
     assert(m_size > 0);
 }
 
 void Cell::set_elements(std::vector<Element*> const & elements)
 {
     m_elements = elements;
+}
+
+std::vector<Element*> & Cell::get_elements() {
+    return m_elements;
+}
+
+const std::vector<Element*> & Cell::get_elements() const {
+    return m_elements;
+}
+
+unsigned int Cell::number_of_elements() const {
+    return m_elements.size();
 }
 
 Cell* const Cell::get_father() const
