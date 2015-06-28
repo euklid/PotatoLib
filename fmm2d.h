@@ -9,11 +9,14 @@
 #define	FMM2D_H
 
 #include "fmm.h"
+#include "tree2d.h"
 
 class FMM2D : public FMM
 {
 public:
-	FMM2D(std::vector<Element*> const & elements, unsigned int terms);
+	FMM2D(std::vector<Element*> const & elements, 
+         unsigned int terms, 
+         unsigned int max_cell_elements);
 	virtual std::vector<double> calculate();
 private:
 	virtual void build_tree();

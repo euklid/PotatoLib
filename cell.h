@@ -9,10 +9,10 @@ class Cell
 {
 public:
     Cell();
-    Cell(unsigned int dimension, unsigned int terms);
+    Cell(unsigned int dimension, unsigned int terms, double size, Point const & center);
     virtual void calc_moment() = 0;
     virtual const double get_moment();
-    virtual void divide() = 0;
+    virtual std::vector<Cell*> divide() = 0;
     virtual void set_elements(std::vector<Element*> const & elements);
     virtual Cell* const get_father() const;
     virtual std::vector<Cell*> const & get_children() ;
@@ -22,7 +22,7 @@ public:
     virtual void set_center(Point const & center);
     virtual bool is_leaf() const;
 
-private:
+protected:
     std::vector<Cell*> m_children;
     Cell* m_father;
     std::vector<Cell*> m_interaction_list;
@@ -33,6 +33,7 @@ private:
     Point m_center;
     double m_moment;
     bool has_moment;
+    double m_size;
 };
 
 #endif

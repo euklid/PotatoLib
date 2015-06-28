@@ -22,18 +22,36 @@ double Point::dist(Point const & p1, Point const & p2)
     return sqrt(res);
 }
 
-const double Point::operator[](unsigned int coord) const
+const double & Point::operator[](unsigned int coord) const
 {
     assert(coord < m_dim);
     assert(m_coord.size() < coord);
     return m_coord[coord];
 }
 
-double Point::operator[](unsigned int coord)
+double & Point::operator[](unsigned int coord)
 {
     assert(coord < m_dim);
     assert(m_coord.size() < coord);
     return m_coord[coord];
+}
+
+Point Point::operator+(const Point& p1) {
+    assert(m_dim == p1.m_dim);
+    Point res(m_dim);
+    for(int i = 0; i<m_dim; i++) {
+        res.m_coord[i] = m_coord[i] + p1.m_coord[i];
+    }
+    return res;
+}
+
+Point Point::operator-(const Point& p1) {
+    assert(m_dim == p1.m_dim);
+    Point res(m_dim);
+    for(int i = 0; i<m_dim; i++) {
+        res.m_coord[i] = m_coord[i] - p1.m_coord[i];
+    }
+    return res;
 }
 
 unsigned int Point::get_dimension() const

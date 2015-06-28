@@ -9,3 +9,11 @@ void Tree::set_root(Cell *root)
 Tree::Tree(unsigned int dim):
     m_dim(dim)
 {}
+
+Cell* Tree::get_root() {
+    return m_root;
+}
+
+const Cell* Tree::get_root() const {
+    return m_root;
+}

@@ -1,16 +1,19 @@
 #include "cell.h"
 
-Cell::Cell(unsigned int dimension, unsigned int terms) :
+Cell::Cell(unsigned int dimension, unsigned int terms, double size, Point const & center) :
     m_dim(dimension),
     m_terms(terms),
+    m_size(size),
+    m_center(center),
     has_moment(false)
 {
     m_center = Point(dimension);
+    assert(m_size > 0);
 }
 
 void Cell::set_elements(std::vector<Element*> const & elements)
 {
-    m_elements = std::vector<Element*>(elements);
+    m_elements = elements;
 }
 
 Cell* const Cell::get_father() const

@@ -9,6 +9,8 @@ set(SOURCES
             point.cpp
             fmm.cpp
             fmm2d.cpp
+            tree2d.cpp
+            cell2d.cpp
 )
 
 set(HEADERS
@@ -19,6 +21,8 @@ set(HEADERS
             point.h
             fmm.h
             fmm2d.h
+            tree2d.h
+            cell2d.h
 )
 
 #add_executable(${PROJECT_NAME} ${SRC_LIST})

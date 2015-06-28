@@ -10,18 +10,14 @@
 
 #include "cell.h"
 
-namespace FMM2D {
-
-class Cell2D : Cell   {
+class Cell2D : public Cell   {
 public:
-	Cell2D();
-	Cell2D(const Cell2D& orig);
-	virtual ~Cell2D();
+    Cell2D(unsigned int terms, double size, Point const & center);
+    virtual void calc_moment();
+    virtual std::vector<Cell*> divide();
 private:
 
 };
-
-}
 
 #endif	/* CELL2D_H */
 

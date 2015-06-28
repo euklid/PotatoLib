@@ -9,7 +9,9 @@ class FMM
 {
 public:
 	
-    FMM(std::vector<Element*> const & elements, unsigned int terms);
+    FMM(std::vector<Element*> const & elements, 
+        unsigned int terms, 
+        unsigned int max_cell_elements);
     virtual void set_kernel(Kernel const & kernel);
     virtual std::vector<double> calculate() = 0;
 
@@ -22,6 +24,7 @@ protected:
     const Kernel* m_kern;
     Tree* m_tree;
     unsigned int m_terms;
+    unsigned int m_max_cell_elements;
 };
 
 #endif

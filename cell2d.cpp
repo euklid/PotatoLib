@@ -7,12 +7,15 @@
 
 #include "cell2d.h"
 
-namespace FMM2D {
 
-Cell2D::Cell2D() { }
+Cell2D::Cell2D(unsigned int terms, double size, Point const & center)
+    : Cell(2, terms, size, center) {}
 
-Cell2D::Cell2D(const Cell2D& orig) { }
+void Cell2D::calc_moment() {
+    
+}
 
-Cell2D::~Cell2D() { }
-
+std::vector<Cell*> Cell2D::divide() {
+    
+    
 }
