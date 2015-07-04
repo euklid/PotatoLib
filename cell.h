@@ -17,14 +17,19 @@ public:
 	virtual const std::vector<Element*>& get_elements() const;
 	virtual std::vector<Element*>& get_elements();
 	virtual unsigned int number_of_elements() const;
-    virtual Cell* const get_father() const;
+    virtual void set_father(Cell* father);
+    virtual Cell * const get_father() const;
     virtual std::vector<Cell*> const & get_children() ;
-    virtual unsigned int get_id() ;
+    virtual unsigned int get_id() const;
+    virtual void set_id(unsigned int index);
     virtual unsigned int get_dimension() ;
     virtual Point const & get_center() ;
     virtual void set_center(Point const & center);
     virtual bool is_leaf() const;
     virtual bool contains_point(Point const & pt) const = 0;
+    virtual void set_level(unsigned int lvl);
+    virtual unsigned int get_level() const;
+    virtual ~Cell();
 
 protected:
     std::vector<Cell*> m_children;
@@ -38,6 +43,7 @@ protected:
     double m_moment;
     bool has_moment;
     double m_size;
+    unsigned int m_level;
 };
 
 #endif

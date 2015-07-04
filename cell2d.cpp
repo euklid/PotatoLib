@@ -16,6 +16,12 @@ void Cell2D::calc_moment() {
     
 }
 
+/**
+ *  divides the cell into 4 cells, sets them as children and cell is 
+ *  their father cell. Children cells contain elements that lie within them,
+ *  such that every element lies in exact one cell
+ *  @return children
+ */
 std::vector<Cell*> Cell2D::divide()
 {
     double half_size = m_size/2;
@@ -33,7 +39,7 @@ std::vector<Cell*> Cell2D::divide()
             new_center[1] = m_center[1] + j * quarter_size;
             Cell2D* new_cell = new Cell2D(m_terms,half_size, new_center);
             new_cells.push_back(new_cell);
-            
+            new_cell->set_father(this);
             //set its elements
             std::vector<Element*> new_cell_elements;
             for (int k = 0; k<m_elements.size(); k++)
@@ -50,7 +56,8 @@ std::vector<Cell*> Cell2D::divide()
             }
         }
     }
-    
+    //set children
+    m_children = new_cells;
     return new_cells;
 }
 

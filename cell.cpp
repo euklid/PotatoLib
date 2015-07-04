@@ -10,6 +10,8 @@ Cell::Cell(unsigned int dimension, unsigned int terms, double size, Point const 
     assert(m_size > 0);
 }
 
+Cell::~Cell() {}
+
 void Cell::set_elements(std::vector<Element*> const & elements)
 {
     m_elements = elements;
@@ -27,9 +29,14 @@ unsigned int Cell::number_of_elements() const {
     return m_elements.size();
 }
 
-Cell* const Cell::get_father() const
+Cell * const Cell::get_father() const
 {
     return m_father;
+}
+
+void Cell::set_father(Cell * father)
+{
+    m_father = father;
 }
 
 std::vector<Cell*> const & Cell::get_children()
@@ -37,9 +44,14 @@ std::vector<Cell*> const & Cell::get_children()
     return m_children;
 }
 
-unsigned int Cell::get_id()
+unsigned int Cell::get_id() const
 {
     return m_id;
+}
+
+void Cell::set_id(unsigned int index)
+{
+    m_id = index;
 }
 
 unsigned int Cell::get_dimension()
@@ -67,6 +79,17 @@ const double Cell::get_moment()
     return m_moment;
 }
 
-bool Cell::is_leaf() const {
+bool Cell::is_leaf() const
+{
     return m_children.empty();
+}
+
+void Cell::set_level(unsigned int lvl)
+{
+    m_level = lvl;
+}
+
+unsigned int Cell::get_level() const
+{
+    return m_level;
 }

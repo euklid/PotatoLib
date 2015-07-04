@@ -10,10 +10,29 @@ Tree::Tree(unsigned int dim):
     m_dim(dim)
 {}
 
-Cell* Tree::get_root() {
+Tree::~Tree() {}
+
+Cell* Tree::get_root()
+{
     return m_root;
 }
 
-const Cell* Tree::get_root() const {
+const Cell* Tree::get_root() const
+{
     return m_root;
+}
+
+const std::vector<Cell*> & Tree::get_leaves() const
+{
+    return m_leaves;
+}
+
+std::vector<Cell*> Tree::get_leaves()
+{
+    return m_leaves;
+}
+
+const std::vector<Cell*> & Tree::get_cells() const
+{
+    return m_cells;
 }

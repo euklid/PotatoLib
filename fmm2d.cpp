@@ -27,6 +27,7 @@ void FMM2D::build_tree()
     m_tree = new Tree2D;
     std::pair<double,Point> bounding_box = get_bounding_cube(m_elements);
     Cell2D* root = new Cell2D(m_terms,bounding_box.first, bounding_box.second);
+    root->set_father(0);
     root->set_elements(m_elements);
     m_tree->set_root(root);
     m_tree->build_tree(m_max_cell_elements);
