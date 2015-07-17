@@ -16,18 +16,20 @@ void Cell2D::calc_moment() {
     
 }
 
-/**
- *  divides the cell into 4 cells, sets them as children and cell is 
- *  their father cell. Children cells contain elements that lie within them,
- *  such that every element lies in exact one cell
- *  @return children
- */
 std::vector<Cell*> Cell2D::divide()
 {
     double half_size = m_size/2;
     double quarter_size = m_size/4;
     std::vector<Cell*> new_cells;
     // don't want to assign an element to two or more cells
+
+
+    // TODO: instead of searching the cell an element belongs to, use
+    //       multiple sorts after their coordinates (smaller or larger than
+    //       center coordinate) and use this information to directly assign
+    //       the element to a cell. --> source: FMBEM book implementation details
+
+
     std::vector<bool> copied_elements(m_elements.size(),false);
     for (int i = 1; i>-2; i=i-2)
     {
@@ -70,7 +72,8 @@ bool Cell2D::contains_point(Point const &pt) const
     
     Point diff = m_center - pt;
     int half_size = m_size/2;
-    for (int i = 0; i<m_dim; i++) {
+    for (int i = 0; i<m_dim; i++)
+    {
         if (std::abs(diff[i]) >  half_size)
         {
             return false;

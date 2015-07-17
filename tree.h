@@ -14,13 +14,13 @@ public:
     virtual Cell* get_root();
     virtual const Cell* get_root() const;
     virtual const std::vector<Cell*> & get_leaves() const;
-    virtual std::vector<Cell*> get_leaves();
+    virtual std::vector<Cell*> & get_leaves();
     virtual const std::vector<Cell*> & get_cells() const;
     virtual ~Tree();
-    virtual Tree_Iterator upward_iterator() = 0;
-    virtual Tree_Iterator downward_iterator() = 0;
+    virtual Tree_Iterator*  upward_iterator() = 0;
+    virtual Tree_Iterator* downward_iterator() = 0;
 protected:
-    virtual Tree_Iterator bfs_iterator() = 0;
+    virtual Tree_Iterator* bfs_iterator() = 0;
     unsigned int m_dim;
     Cell* m_root;
     std::vector<Cell*> m_cells;

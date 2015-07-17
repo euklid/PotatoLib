@@ -27,7 +27,7 @@ const std::vector<Cell*> & Tree::get_leaves() const
     return m_leaves;
 }
 
-std::vector<Cell*> Tree::get_leaves()
+std::vector<Cell *> & Tree::get_leaves()
 {
     return m_leaves;
 }

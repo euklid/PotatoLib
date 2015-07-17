@@ -22,11 +22,13 @@ public:
      *  @param max_elements maximal number of elements within a cell
      */
     virtual void build_tree(int max_elements);
-    virtual Tree_Iterator upward_iterator();
-    virtual Tree_Iterator downward_iterator();
+    virtual Tree_Iterator* upward_iterator();
+    virtual Tree_Iterator* downward_iterator();
     
 private:
-    virtual Tree_Iterator bfs_iterator();
+    virtual Tree_Iterator* bfs_iterator();
+    void generate_cells();
+    void generate_interaction_lists();
     bool m_built;
 };
 

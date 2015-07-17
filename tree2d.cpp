@@ -7,13 +7,15 @@
 
 #include "tree2d.h"
 #include <queue>
+#include <iostream>
 
 Tree2D::Tree2D() : Tree(2), m_built(false)
 {}
 
 Tree2D::~Tree2D()
 {
-    for (int i = 0; i<m_cells.size(); i++) {
+    for (int i = 0; i<m_cells.size(); i++)
+    {
         delete m_cells[i];
     }
     m_cells.clear();
@@ -21,9 +23,9 @@ Tree2D::~Tree2D()
 
 void Tree2D::build_tree(int max_elements)
 {
-    int index = 0;
     if (m_built)
     {
+        std::cout << "Tree has already been built." << std::endl;
         return;
     }
     else
@@ -31,6 +33,15 @@ void Tree2D::build_tree(int max_elements)
         m_built = true;
     }
     
+    //creating new cells by dividing them according to division criterion
+    generate_cells();
+    //generating interaction lists
+    generate_interaction_lists();
+}
+
+void Tree2D::generate_cells()
+{
+    int index = 0;
     std::queue<Cell*> undivided_cells;
     undivided_cells.push(m_root);
     m_root->set_level(1);
@@ -59,19 +70,24 @@ void Tree2D::build_tree(int max_elements)
     }
 }
 
-Tree_Iterator Tree2D::bfs_iterator()
+void Tree2D::generate_interaction_lists()
 {
-    return Tree2D_BFS_Iterator(this);
+
 }
 
-Tree_Iterator Tree2D::upward_iterator()
+Tree_Iterator *Tree2D::bfs_iterator()
 {
-    return Tree2D_Upward_Iterator(this);
+    return new Tree2D_BFS_Iterator(this);
 }
 
-Tree_Iterator Tree2D::downward_iterator()
+Tree_Iterator * Tree2D::upward_iterator()
 {
-    return Tree2D_BFS_Iterator(this);
+    return new Tree2D_Upward_Iterator(this);
+}
+
+Tree_Iterator * Tree2D::downward_iterator()
+{
+    return new Tree2D_BFS_Iterator(this);
 }
 
 Tree2D_BFS_Iterator::Tree2D_BFS_Iterator(Tree2D* tree)
@@ -118,7 +134,7 @@ Cell* Tree2D_Upward_Iterator::next()
 {
     m_last = m_leaf_queue.front();
     m_leaf_queue.pop();
-    m_used_ids.at(m_last->get_id());
+    m_used_ids[(m_last->get_id())] = true;
     if (!m_used_ids.at(m_last->get_father()->get_id())) {
         Cell * const father = m_last->get_father();
         m_leaf_queue.push(father);
