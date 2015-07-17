@@ -27,7 +27,7 @@ public:
     
 private:
     virtual Tree_Iterator* bfs_iterator();
-    void generate_cells();
+    void generate_cells(int max_elements);
     void generate_interaction_lists();
     bool m_built;
 };

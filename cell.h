@@ -22,13 +22,14 @@ public:
     virtual std::vector<Cell*> const & get_children() ;
     virtual unsigned int get_id() const;
     virtual void set_id(unsigned int index);
-    virtual unsigned int get_dimension() ;
-    virtual Point const & get_center() ;
+    virtual unsigned int get_dimension();
+    virtual Point const & get_center();
     virtual void set_center(Point const & center);
     virtual bool is_leaf() const;
     virtual bool contains_point(Point const & pt) const = 0;
     virtual void set_level(unsigned int lvl);
     virtual unsigned int get_level() const;
+    virtual const double get_size() const;
     virtual ~Cell();
 
 protected:

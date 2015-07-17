@@ -12,6 +12,7 @@ public:
 
     Point(unsigned int dimension);
     static double dist(Point const & p1, Point const & p2);
+    static double max_norm_dist(Point const & p1, Point const & p2);
     double & operator[](unsigned int coord);
     const double & operator[](unsigned int coord) const;
     unsigned int get_dimension() const;

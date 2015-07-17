@@ -8,6 +8,7 @@
 #include "tree2d.h"
 #include <queue>
 #include <iostream>
+#include <cmath>
 
 Tree2D::Tree2D() : Tree(2), m_built(false)
 {}
@@ -34,17 +35,21 @@ void Tree2D::build_tree(int max_elements)
     }
     
     //creating new cells by dividing them according to division criterion
-    generate_cells();
+    generate_cells(max_elements);
     //generating interaction lists
     generate_interaction_lists();
 }
 
-void Tree2D::generate_cells()
+void Tree2D::generate_cells(int max_elements)
 {
     int index = 0;
     std::queue<Cell*> undivided_cells;
     undivided_cells.push(m_root);
-    m_root->set_level(1);
+    m_root->set_level(0);
+    
+    m_max_level = 0;
+    m_lvl_ids.push_back(std::vector<unsigned int>());
+    
     while (!undivided_cells.empty()) 
     {
         Cell* cur_cell = undivided_cells.front();
@@ -52,6 +57,15 @@ void Tree2D::generate_cells()
         
         m_cells.push_back(cur_cell);
         cur_cell->set_id(index);
+        if (cur_cell->get_level() > m_max_level) {
+            assert(cur_cell->get_level() == m_max_level+1);
+            m_max_level++;
+            m_lvl_ids.push_back(std::vector<unsigned int>());
+        }
+        
+        m_lvl_ids[cur_cell->get_level()].push_back(cur_cell->get_id());
+        
+        assert(cur_cell->get_id() == m_cells.size()-1);
         index++;
         
 		if(cur_cell->number_of_elements() > max_elements)
@@ -72,7 +86,32 @@ void Tree2D::generate_cells()
 
 void Tree2D::generate_interaction_lists()
 {
-
+    // first only like the Liu book
+    for (unsigned int i = 0; i<=m_max_level; i++) {
+        std::vector<unsigned int> & lvl_cells = m_lvl_ids[i];
+        std::vector<unsigned int >::iterator it = lvl_cells.begin();
+        std::vector<unsigned int >::const_iterator other_it;
+        for (; it!=lvl_cells.end(); ++it) {
+            Cell* cur_cell = m_cells[*it];
+            assert(cur_cell->get_id() == *it);
+            Point cur_cell_grid_pos = get_cell_grid_pos(cur_cell->get_center(),
+                                                        i,
+                                                        m_root->get_center(),
+                                                        m_root->get_size());
+            for (other_it = lvl_cells.begin(); other_it != lvl_cells.end(); ++other_it) {
+                Cell* other_cell = m_cells[*other_it];
+                Point other_cell_grid_pos = get_cell_grid_pos(other_cell->get_center(),
+                                                              i,
+                                                              m_root->get_center(),
+                                                              m_root->get_size());
+                if (Point::max_norm_dist(cur_cell_grid_pos, other_cell_grid_pos) != 1) {
+                    continue;
+                }
+                
+                //otherwise we have a neighbor
+            }
+        }
+    }
 }
 
 Tree_Iterator *Tree2D::bfs_iterator()

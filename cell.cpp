@@ -93,3 +93,8 @@ unsigned int Cell::get_level() const
 {
     return m_level;
 }
+
+const double Cell::get_size() const
+{
+    return m_size;
+}

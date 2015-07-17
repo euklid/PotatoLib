@@ -1,4 +1,5 @@
 #include "point.h"
+#include <cmath>
 
 Point::Point() {}
 
@@ -22,6 +23,23 @@ double Point::dist(Point const & p1, Point const & p2)
     return sqrt(res);
 }
 
+double Point::max_norm_dist(const Point &p1, const Point & p2)
+{
+    assert(p1.get_dimension() == p2.get_dimension());
+    unsigned int dim = p1.get_dimension();
+    double max = 0;
+    double diff = 0;
+    for (unsigned int i = 0; i< dim; i++)
+    {
+        diff = std::abs(p1[i]-p2[i]);
+        if (diff  > max)
+        {
+            max = diff;
+        }
+    }
+    return max;
+}
+
 const double & Point::operator[](unsigned int coord) const
 {
     assert(coord < m_dim);
@@ -36,19 +54,23 @@ double & Point::operator[](unsigned int coord)
     return m_coord[coord];
 }
 
-Point Point::operator+(const Point& p1) const {
+Point Point::operator+(const Point& p1) const
+{
     assert(m_dim == p1.m_dim);
     Point res(m_dim);
-    for(int i = 0; i<m_dim; i++) {
+    for(int i = 0; i<m_dim; i++)
+    {
         res.m_coord[i] = m_coord[i] + p1.m_coord[i];
     }
     return res;
 }
 
-Point Point::operator-(const Point& p1) const {
+Point Point::operator-(const Point& p1) const
+{
     assert(m_dim == p1.m_dim);
     Point res(m_dim);
-    for(int i = 0; i<m_dim; i++) {
+    for(int i = 0; i<m_dim; i++)
+    {
         res.m_coord[i] = m_coord[i] - p1.m_coord[i];
     }
     return res;
