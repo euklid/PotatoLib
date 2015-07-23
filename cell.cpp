@@ -5,9 +5,11 @@ Cell::Cell(unsigned int dimension, unsigned int terms, double size, Point const 
     m_terms(terms),
     m_size(size),
     m_center(center),
-    has_moment(false)
+    m_has_moment(false),
+    m_has_grid_pos(false)
 {
     assert(m_size > 0);
+    m_grid_pos = Point(dimension);
 }
 
 Cell::~Cell() {}
@@ -39,7 +41,7 @@ void Cell::set_father(Cell * father)
     m_father = father;
 }
 
-std::vector<Cell*> const & Cell::get_children()
+std::vector<Cell*> const & Cell::get_children() const
 {
     return m_children;
 }
@@ -54,12 +56,12 @@ void Cell::set_id(unsigned int index)
     m_id = index;
 }
 
-unsigned int Cell::get_dimension()
+unsigned int Cell::get_dimension() const
 {
     return m_dim;
 }
 
-Point const & Cell::get_center()
+Point const & Cell::get_center() const
 {
     return m_center;
 }
@@ -71,7 +73,7 @@ void Cell::set_center(Point const & center)
 
 const double Cell::get_moment()
 {
-    if(!has_moment)
+    if(!m_has_moment)
     {
         calc_moment();
     }
@@ -97,4 +99,52 @@ unsigned int Cell::get_level() const
 const double Cell::get_size() const
 {
     return m_size;
+}
+
+void Cell::add_to_interaction_list(Cell *cell)
+{
+    m_interaction_list.insert(std::make_pair(cell->get_id(),cell));
+}
+
+void Cell::add_to_direct_list(Cell *cell)
+{
+    m_direct_list.insert(std::make_pair(cell->get_id(),cell));
+}
+
+std::vector<Cell *> Cell::get_interaction_list() const
+{
+    std::vector<Cell*> linearized_interaction_list;
+    std::map<unsigned int, Cell*>::const_iterator it = m_interaction_list.begin();
+    for(; it != m_interaction_list.end();  ++it)
+    {
+        linearized_interaction_list.push_back(it->second);
+    }
+    return linearized_interaction_list;
+}
+
+std::vector<unsigned int> Cell::get_interaction_list_ids() const
+{
+    std::vector<unsigned int> linearized_interaction_list_ids;
+    std::map<unsigned int, Cell*>::const_iterator it = m_interaction_list.begin();
+    for(; it != m_interaction_list.end();  ++it)
+    {
+        linearized_interaction_list_ids.push_back(it->first);
+    }
+    return linearized_interaction_list_ids;
+}
+
+bool Cell::has_level_grid_position() const
+{
+    return m_has_grid_pos;
+}
+
+const Point &Cell::get_level_grid_position() const
+{
+    return m_grid_pos;
+}
+
+void Cell::set_level_grid_position(const Point &grid_pos)
+{
+    assert(grid_pos.get_dimension() == m_dim);
+    m_grid_pos = grid_pos;
 }

@@ -13,7 +13,6 @@ public:
                                    unsigned int lvl,
                                    Point const & root_cell_center,
                                    double root_cell_size);
-    
     Tree(unsigned int dim);
     virtual void set_root(Cell* root);
     virtual void build_tree(int max_elements) = 0;

@@ -84,31 +84,77 @@ void Tree2D::generate_cells(int max_elements)
     }
 }
 
+Point lazy_get_set_cell_grid_pos(Cell* cell,
+                                 unsigned int lvl,
+                                 Cell const * const root)
+{
+    Point cell_grid_pos(cell->get_dimension());
+    if (cell->has_level_grid_position())
+    {
+        cell_grid_pos = cell->get_level_grid_position();
+    }
+    else
+    {
+        cell_grid_pos = Tree::get_cell_grid_pos(cell->get_center(),
+                                                lvl,
+                                                root->get_center(),
+                                                root->get_size());
+    }
+    return cell_grid_pos;
+}
+
 void Tree2D::generate_interaction_lists()
 {
     // first only like the Liu book
-    for (unsigned int i = 0; i<=m_max_level; i++) {
+    for (unsigned int i = 3; i<=m_max_level; i++)
+    {
         std::vector<unsigned int> & lvl_cells = m_lvl_ids[i];
+        std::vector<unsigned int> & lvl_father_cells = m_lvl_ids[i-1];
         std::vector<unsigned int >::iterator it = lvl_cells.begin();
         std::vector<unsigned int >::const_iterator other_it;
-        for (; it!=lvl_cells.end(); ++it) {
+        for (; it!=lvl_cells.end(); ++it)
+        {
             Cell* cur_cell = m_cells[*it];
             assert(cur_cell->get_id() == *it);
-            Point cur_cell_grid_pos = get_cell_grid_pos(cur_cell->get_center(),
-                                                        i,
-                                                        m_root->get_center(),
-                                                        m_root->get_size());
-            for (other_it = lvl_cells.begin(); other_it != lvl_cells.end(); ++other_it) {
-                Cell* other_cell = m_cells[*other_it];
-                Point other_cell_grid_pos = get_cell_grid_pos(other_cell->get_center(),
-                                                              i,
-                                                              m_root->get_center(),
-                                                              m_root->get_size());
-                if (Point::max_norm_dist(cur_cell_grid_pos, other_cell_grid_pos) != 1) {
+
+            Cell* cur_cell_father = cur_cell->get_father();
+
+            //TODO: store cell level grid position in cell to avoid multiple calculation!
+            Point cur_cell_grid_pos = lazy_get_set_cell_grid_pos(cur_cell,i,m_root);
+            Point cur_cell_father_grid_pos = lazy_get_set_cell_grid_pos(cur_cell_father,i-1, m_root);
+            for (other_it = lvl_father_cells.begin(); other_it != lvl_father_cells.end(); ++other_it)
+            {
+                Cell* other_cell_father = m_cells[*other_it];
+                Point other_cell_father_grid_pos = lazy_get_set_cell_grid_pos(other_cell_father,
+                                                                              i-1,
+                                                                              m_root);
+                if (Point::max_norm_dist(cur_cell_father_grid_pos, other_cell_father_grid_pos) != 1)
+                {
                     continue;
                 }
-                
-                //otherwise we have a neighbor
+                //otherwise we have neighboring father cells and want to retrieve the other cell's
+                //children
+                if (other_cell_father->is_leaf())
+                {
+                    continue;
+                }
+                std::vector<Cell*> children = other_cell_father->get_children();
+                std::vector<Cell*>::iterator children_it = children.begin();
+
+                for(;children_it != children.end(); ++children_it)
+                {
+                    Point children_cell_grid_pos = lazy_get_set_cell_grid_pos((*children_it),
+                                                                     i,
+                                                                     m_root);
+                    if (Point::max_norm_dist(children_cell_grid_pos,cur_cell_grid_pos) > 1)
+                    {
+                        cur_cell->add_to_interaction_list(*children_it);
+                    }
+                    else
+                    {
+                        cur_cell->add_to_direct_list(*children_it);
+                    }
+                }
             }
         }
     }
