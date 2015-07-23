@@ -23,6 +23,7 @@ set(HEADERS
             fmm2d.h
             tree2d.h
             cell2d.h
+            complex_t.h
 )
 
 #add_executable(${PROJECT_NAME} ${SRC_LIST})
