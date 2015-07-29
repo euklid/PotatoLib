@@ -19,15 +19,18 @@ void Cell::set_elements(std::vector<Element*> const & elements)
     m_elements = elements;
 }
 
-std::vector<Element*> & Cell::get_elements() {
+std::vector<Element*> & Cell::get_elements()
+{
     return m_elements;
 }
 
-const std::vector<Element*> & Cell::get_elements() const {
+const std::vector<Element*> & Cell::get_elements() const
+{
     return m_elements;
 }
 
-unsigned int Cell::number_of_elements() const {
+unsigned int Cell::number_of_elements() const
+{
     return m_elements.size();
 }
 
@@ -71,14 +74,14 @@ void Cell::set_center(Point const & center)
     m_center = center;
 }
 
-const double Cell::get_moment()
+const std::vector<double> & Cell::get_moments() const
 {
-    if(!m_has_moment)
-    {
-        calc_moment();
-    }
+    return m_moments;
+}
 
-    return m_moment;
+const std::vector<complex_t>& Cell::get_moments_cmp() const
+{
+    return m_moments_cmp;
 }
 
 bool Cell::is_leaf() const
@@ -99,6 +102,16 @@ unsigned int Cell::get_level() const
 const double Cell::get_size() const
 {
     return m_size;
+}
+
+void Cell::set_moments(std::vector<double> const & moments)
+{
+    m_moments = moments;
+}
+
+void Cell::set_moments_cmp(std::vector<complex_t> const & moments_cmp)
+{
+    m_moments_cmp = moments_cmp;
 }
 
 void Cell::add_to_interaction_list(Cell *cell)
@@ -147,4 +160,24 @@ void Cell::set_level_grid_position(const Point &grid_pos)
 {
     assert(grid_pos.get_dimension() == m_dim);
     m_grid_pos = grid_pos;
+}
+
+const std::vector<double> & Cell::get_local_exps() const
+{
+    return m_local_exps;
+}
+
+const std::vector<complex_t> & Cell::get_local_exps_cmp() const
+{
+    return m_local_exps_cmp;
+}
+
+void Cell::set_local_exps(std::vector<double> const & local_exps)
+{
+    m_local_exps = local_exps;
+}
+
+void Cell::set_local_exps_cmp(std::vector<complex_t> const & local_exps_cmp)
+{
+    m_local_exps_cmp = local_exps_cmp;
 }

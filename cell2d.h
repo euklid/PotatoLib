@@ -13,7 +13,6 @@
 class Cell2D : public Cell   {
 public:
     Cell2D(unsigned int terms, double size, Point const & center);
-    virtual void calc_moment();
 
     /**
      *  divides the cell into 4 cells, sets them as children and cell is

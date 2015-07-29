@@ -119,7 +119,6 @@ void Tree2D::generate_interaction_lists()
 
             Cell* cur_cell_father = cur_cell->get_father();
 
-            //TODO: store cell level grid position in cell to avoid multiple calculation!
             Point cur_cell_grid_pos = lazy_get_set_cell_grid_pos(cur_cell,i,m_root);
             Point cur_cell_father_grid_pos = lazy_get_set_cell_grid_pos(cur_cell_father,i-1, m_root);
             for (other_it = lvl_father_cells.begin(); other_it != lvl_father_cells.end(); ++other_it)

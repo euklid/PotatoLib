@@ -5,14 +5,21 @@
 #include <map>
 #include "element.h"
 #include "point.h"
+#include "complex_t.h"
 
 class Cell
 {
 public:
     Cell();
     Cell(unsigned int dimension, unsigned int terms, double size, Point const & center);
-    virtual void calc_moment() = 0;
-    virtual const double get_moment();
+    virtual const std::vector<double> & get_moments() const;
+    virtual const std::vector<complex_t> & get_moments_cmp() const;
+    virtual void set_moments(std::vector<double> const & moments);
+    virtual void set_moments_cmp(std::vector<complex_t> const & moments_cmp);
+    virtual const std::vector<double> & get_local_exps() const;
+    virtual const std::vector<complex_t>& get_local_exps_cmp() const;
+    virtual void set_local_exps(std::vector<double> const & local_exps);
+    virtual void set_local_exps_cmp(std::vector<complex_t> const & local_exps_cmp);
     virtual std::vector<Cell*> divide() = 0;
     virtual void set_elements(std::vector<Element*> const & elements);
 	virtual const std::vector<Element*>& get_elements() const;
@@ -51,7 +58,10 @@ protected:
     unsigned int m_terms;
     Point m_center;
     Point m_grid_pos;
-    double m_moment;
+    std::vector<double> m_moments;
+    std::vector<complex_t> m_moments_cmp;
+    std::vector<double> m_local_exps;
+    std::vector<complex_t> m_local_exps_cmp;
     bool m_has_moment;
     bool m_has_grid_pos;
     double m_size;

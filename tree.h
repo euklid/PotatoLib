@@ -22,7 +22,7 @@ public:
     virtual std::vector<Cell*> & get_leaves();
     virtual const std::vector<Cell*> & get_cells() const;
     virtual ~Tree();
-    virtual Tree_Iterator*  upward_iterator() = 0;
+    virtual Tree_Iterator* upward_iterator() = 0;
     virtual Tree_Iterator* downward_iterator() = 0;
 
 protected:
