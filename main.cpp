@@ -3,6 +3,7 @@
 #include "element.h"
 #include "point.h"
 #include "fmm2d.h"
+#include "kernel_laplace_2d.h"
 
 int main()
 {

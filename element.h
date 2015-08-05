@@ -9,12 +9,15 @@ public:
     Element(unsigned int dimension) :
         m_dim(dimension)
     {}
-    virtual double get_value()
+    
+    virtual double get_value() const
     {
         return m_value;
     }
 
-    virtual Point get_position() = 0;
+    virtual Point get_position() const = 0;
+    
+    virtual bool operator==(Element const & el) = 0;
 
 protected:
     double m_value;

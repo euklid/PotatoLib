@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 2.8)
 #aux_source_directory(. SRC_LIST)
 set(SOURCES
             cell.cpp
-            kernel.cpp
             main.cpp
             tree.cpp
             point.cpp
@@ -11,6 +10,7 @@ set(SOURCES
             fmm2d.cpp
             tree2d.cpp
             cell2d.cpp
+            kernel_laplace_2d.cpp
 )
 
 set(HEADERS
@@ -24,6 +24,7 @@ set(HEADERS
             tree2d.h
             cell2d.h
             complex_t.h
+            kernel_laplace_2d.h
 )
 
 #add_executable(${PROJECT_NAME} ${SRC_LIST})

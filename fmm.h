@@ -21,7 +21,7 @@ protected:
     virtual void downward_pass() = 0;
 
     std::vector<Element*> m_elements;
-    const Kernel* m_kern;
+    const Kernel* m_kernel;
     Tree* m_tree;
     unsigned int m_terms;
     unsigned int m_max_cell_elements;

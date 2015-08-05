@@ -8,6 +8,6 @@ FMM::FMM(std::vector<Element*> const & elements, unsigned int terms, unsigned in
 
 void FMM::set_kernel(Kernel const & kernel)
 {
-    m_kern = &kernel;
+    m_kernel = &kernel;
 }
 

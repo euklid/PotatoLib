@@ -19,7 +19,9 @@ FMM2D::FMM2D(std::vector<Element*> const & elements,
 
 std::vector<double> FMM2D::calculate() 
 {
-	
+    build_tree();
+    upward_pass();
+    downward_pass();
 }
 
 void FMM2D::build_tree() 
@@ -35,7 +37,12 @@ void FMM2D::build_tree()
 
 void FMM2D::upward_pass() 
 {
-	
+    Tree_Iterator *it = m_tree->upward_iterator();
+    while (it->has_next())
+    {
+        Cell *cur_cell = it->next();
+        std::vector<complex_t> moments = m_kernel->calc_moments_cmp(*cur_cell, m_terms);
+    }
 }
 
 void FMM2D::downward_pass() 

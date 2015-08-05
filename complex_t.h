@@ -124,7 +124,18 @@ struct complex_t
         img /= a_abs2;
         return *this;
     }
+    
+    double arg() const
+    {
+        assert(img != 0 && real !=0);
+        return atan2(img, real);
+    }
 };
+
+complex_t log(complex_t const & fst)
+{
+    return complex_t(std::log(fst.abs()),fst.arg());
+}
 
 
 #endif
