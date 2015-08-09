@@ -2,6 +2,7 @@
 #define COMPLEX_T_H
 
 #include "assert.h"
+#include "point.h"
 #include <cmath>
 
 struct complex_t
@@ -11,6 +12,13 @@ struct complex_t
 
     complex_t(double real=0, double img=0)
         : real(real), img(img) {}
+    
+    complex_t(Point const & p)
+    {
+        assert(p.get_dimension() == 2);
+        real = p[0];
+        img = p[1];
+    }
 
     complex_t& operator=(const complex_t & a)
     {
@@ -125,17 +133,24 @@ struct complex_t
         return *this;
     }
     
+    complex_t & operator-()
+    {
+        img*=-1;
+        real*=-1;
+        return *this;
+    }
+    
     double arg() const
     {
         assert(img != 0 && real !=0);
         return atan2(img, real);
     }
+    
+    static complex_t log(complex_t const & fst)
+    {
+        return complex_t(std::log(fst.abs()),fst.arg());
+    }
 };
-
-complex_t log(complex_t const & fst)
-{
-    return complex_t(std::log(fst.abs()),fst.arg());
-}
 
 
 #endif
