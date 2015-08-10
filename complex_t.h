@@ -12,7 +12,7 @@ struct complex_t
 
     complex_t(double real=0, double img=0)
         : real(real), img(img) {}
-    
+
     complex_t(Point const & p)
     {
         assert(p.get_dimension() == 2);

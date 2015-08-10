@@ -13,8 +13,10 @@ public:
     virtual double direct(Element const & el1, Element const & el2) const;
     virtual complex_t direct_cmp(Element const & el1, Element const & el2) const;
     virtual std::vector<complex_t> calc_moments_cmp(std::vector<Element*> const & elements,
+                                                    complex_t const & mom_center,
                                                     int num_moments) const;
     virtual std::vector<double> calc_moments(std::vector<Element*> const & elements,
+                                             const Point &mom_center,
                                              int num_moments) const;
     virtual void M2L_cmp(std::vector<complex_t> const & moments,
                          complex_t const & mom_center,
@@ -32,7 +34,6 @@ public:
                          complex_t const & loc_in_center,
                          std::vector<complex_t> & loc_out,
                          complex_t const & loc_out_center) const;
-private:
     virtual void M2M(std::vector<double> const & mom_in,
                      Point const & mom_in_center,
                      std::vector<double> & mom_out,

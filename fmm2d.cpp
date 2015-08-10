@@ -41,7 +41,10 @@ void FMM2D::upward_pass()
     while (it->has_next())
     {
         Cell *cur_cell = it->next();
-        std::vector<complex_t> moments = m_kernel->calc_moments_cmp(*cur_cell, m_terms);
+        //ToDo: distinguish between leaf and non-leaf nodes.
+        std::vector<complex_t> moments = m_kernel->calc_moments_cmp(cur_cell->get_elements(),
+                                                                    cur_cell->get_center(),
+                                                                    m_terms);
     }
 }
 
