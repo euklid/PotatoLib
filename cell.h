@@ -42,6 +42,8 @@ public:
     virtual void add_to_direct_list(Cell* cell);
     virtual std::vector<Cell*> get_interaction_list() const;
     virtual std::vector<unsigned int> get_interaction_list_ids() const;
+    virtual std::vector<Cell*> get_direct_list() const;
+    virtual std::vector<unsigned int> get_direct_list_ids() const;
     virtual bool has_level_grid_position() const;
     virtual Point const & get_level_grid_position() const;
     virtual void set_level_grid_position(Point const & grid_pos);

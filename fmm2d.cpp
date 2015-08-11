@@ -79,10 +79,68 @@ void FMM2D::upward_pass()
         }
     }
 }
+template<class T>
+void add_moments_cmp(std::vector<T> const & summand, std::vector<T> & moments)
+{
+    assert(summand.size() == moments.size());
+    unsigned int num_moments = moments.size();
+    for(unsigned int i = 0; i<num_moments; i++)
+    {
+        moments[i] += summand[i];
+    }
+}
+
+void FMM2D::m2l_downward_pass(Cell* cur_cell)
+{
+    std::vector<complex_t> shifted_moments, local_exps = cur_cell->get_local_exps_cmp();
+    std::vector<Cell*> const & interaction_list = cur_cell->get_interaction_list();
+    unsigned int num_interaction_list = interaction_list.size();
+    for(unsigned int i = 0; i<num_interaction_list; i++)
+    {
+        m_kernel->M2L_cmp(interaction_list[i]->get_moments_cmp(),
+                          interaction_list[i]->get_center(),
+                          shifted_moments,
+                          cur_cell->get_center());
+        add_moments_cmp(shifted_moments,local_exps);
+    }
+    cur_cell->set_local_exps_cmp(local_exps);
+}
+
+void FMM2D::l2l_downward_pass(Cell *cell)
+{
+    std::vector<complex_t> local_exp = cell->get_local_exps_cmp();
+    std::vector<complex_t> shifted_local_exp(m_terms,0);
+    Cell* father = cell->get_father();
+    std::vector<complex_t> const & father_local_exp = father->get_local_exps_cmp();
+    m_kernel->L2L_cmp(father_local_exp,father->get_center(),shifted_local_exp,cell->get_center());
+    add_moments_cmp(shifted_local_exp,local_exp);
+    cell->set_local_exps_cmp(local_exp);
+}
 
 void FMM2D::downward_pass() 
 {
-	
+    Tree_Iterator* it = m_tree->downward_iterator();
+    // level 2 only M2L and direct, no L2L
+    Cell* cur_cell;
+    while(it->has_next())
+    {
+        cur_cell = it->next();
+        if(cur_cell->get_level() > 2) break;
+        //M2L
+        m2l_downward_pass(cur_cell);
+    }
+
+    //reached lvl 3 or higher --> use L2L and M2L
+    while (it->has_next()) {
+        m2l_downward_pass(cur_cell);
+        l2l_downward_pass(cur_cell);
+        cur_cell = it->next();
+    }
+}
+
+void FMM2D::evaluate()
+{
+
 }
 
 /**

@@ -73,6 +73,21 @@ private:
     std::vector<Cell*> const & m_cells;
 };
 
+class Tree2D_Downward_Code_Iterator : public Tree_Iterator
+{
+public:
+    Tree2D_Downward_Code_Iterator(std::vector<std::vector<unsigned int> > const & lvl_ids,
+                                  std::vector<Cell*> const & cells);
+    virtual Cell* next();
+    virtual bool has_next();
+private:
+    std::vector<std::vector<unsigned int> > const & m_lvl_ids;
+    unsigned int m_outer_size;
+    unsigned int m_outer_idx;
+    unsigned int m_inner_size;
+    unsigned int m_inner_idx;
+    std::vector<Cell*> const & m_cells;
+};
 
 #endif	/* TREE2D_H */
 

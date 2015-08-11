@@ -55,6 +55,8 @@ void Tree2D::generate_cells(int max_elements)
         Cell* cur_cell = undivided_cells.front();
         undivided_cells.pop();
         
+        if(cur_cell->get_elements().size() == 0) continue;
+
         m_cells.push_back(cur_cell);
         cur_cell->set_id(index);
         if (cur_cell->get_level() > m_max_level) {
@@ -106,7 +108,7 @@ Point lazy_get_set_cell_grid_pos(Cell* cell,
 void Tree2D::generate_interaction_lists()
 {
     // first only like the Liu book
-    for (unsigned int i = 3; i<=m_max_level; i++)
+    for (unsigned int i = 2; i<=m_max_level; i++)
     {
         std::vector<unsigned int> & lvl_cells = m_lvl_ids[i];
         std::vector<unsigned int> & lvl_father_cells = m_lvl_ids[i-1];
@@ -149,7 +151,7 @@ void Tree2D::generate_interaction_lists()
                     {
                         cur_cell->add_to_interaction_list(*children_it);
                     }
-                    else
+                    else if ((*children_it)->is_leaf() || cur_cell->is_leaf() || i == m_max_level)
                     {
                         cur_cell->add_to_direct_list(*children_it);
                     }
@@ -171,7 +173,7 @@ Tree_Iterator * Tree2D::upward_iterator()
 
 Tree_Iterator * Tree2D::downward_iterator()
 {
-    return new Tree2D_BFS_Iterator(this);
+    return new Tree2D_Downward_Code_Iterator(m_lvl_ids,m_cells);
 }
 
 Tree2D_BFS_Iterator::Tree2D_BFS_Iterator(Tree2D* tree)
@@ -201,8 +203,6 @@ bool Tree2D_BFS_Iterator::has_next()
 {
     return !m_cell_queue.empty();
 }
-
-
 
 Tree2D_Upward_Iterator::Tree2D_Upward_Iterator(Tree2D* tree)
 {
@@ -238,7 +238,7 @@ bool Tree2D_Upward_Iterator::has_next()
 Tree2D_Upward_Code_Iterator::Tree2D_Upward_Code_Iterator(
         std::vector<std::vector<unsigned int> > const & lvl_ids,
         std::vector<Cell*> const & cells)
- :  m_lvl_ids(lvl_ids), m_cells(cells)
+    :  m_lvl_ids(lvl_ids), m_cells(cells)
 {
     m_outer_size = m_lvl_ids.size();
     m_outer_idx = m_outer_size-1;
@@ -249,7 +249,7 @@ Tree2D_Upward_Code_Iterator::Tree2D_Upward_Code_Iterator(
 Cell* Tree2D_Upward_Code_Iterator::next()
 {
 #if DEBUG
-    assert(m_cells.size() < m_lvl_ids[m_outer_idx][m_inner_idx]);
+    assert(m_cells.size() > m_lvl_ids[m_outer_idx][m_inner_idx]);
 #endif
     Cell* res = m_cells[m_lvl_ids[m_outer_idx][m_inner_idx]];
     ++m_inner_idx;
@@ -269,5 +269,42 @@ bool Tree2D_Upward_Code_Iterator::has_next()
         return true;
     }
     // we are at highest level 2
+    return (m_inner_idx+1!=m_inner_size);
+}
+
+Tree2D_Downward_Code_Iterator::Tree2D_Downward_Code_Iterator(
+        const std::vector<std::vector<unsigned int> > &lvl_ids,
+        const std::vector<Cell *> &cells)
+    :  m_lvl_ids(lvl_ids), m_cells(cells)
+{
+    m_outer_size = m_lvl_ids.size();
+    m_outer_idx = 2;
+    m_inner_size = m_lvl_ids[m_outer_idx].size();
+    m_inner_idx = 0;
+}
+
+Cell *Tree2D_Downward_Code_Iterator::next()
+{
+#if DEBUG
+    assert(m_cells.size() > m_lvl_ids[m_outer_idx][m_inner_idx]);
+#endif
+    Cell* res = m_cells[m_lvl_ids[m_outer_idx][m_inner_idx]];
+    ++m_inner_idx;
+    if (m_inner_idx == m_inner_size)
+    {
+        m_inner_idx = 0;
+        m_outer_idx++;
+        m_inner_size = m_lvl_ids[m_outer_idx].size();
+    }
+    return res;
+}
+
+bool Tree2D_Downward_Code_Iterator::has_next()
+{
+    if (m_outer_idx < m_outer_size-1)
+    {
+        return true;
+    }
+    // we are at highest level
     return (m_inner_idx+1!=m_inner_size);
 }

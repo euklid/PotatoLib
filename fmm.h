@@ -19,6 +19,7 @@ protected:
     virtual void build_tree() = 0;
     virtual void upward_pass() = 0;
     virtual void downward_pass() = 0;
+    virtual void evaluate() = 0;
 
     std::vector<Element*> m_elements;
     const Kernel* m_kernel;

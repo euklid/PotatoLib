@@ -6,7 +6,11 @@ Cell::Cell(unsigned int dimension, unsigned int terms, double size, Point const 
     m_size(size),
     m_center(center),
     m_has_moment(false),
-    m_has_grid_pos(false)
+    m_has_grid_pos(false),
+    m_moments(std::vector<double>(terms,0)),
+    m_moments_cmp(std::vector<complex_t>(terms,0)),
+    m_local_exps(std::vector<double>(terms,0)),
+    m_local_exps_cmp(std::vector<complex_t>(terms,0))
 {
     assert(m_size > 0);
     m_grid_pos = Point(dimension);
@@ -144,6 +148,27 @@ std::vector<unsigned int> Cell::get_interaction_list_ids() const
         linearized_interaction_list_ids.push_back(it->first);
     }
     return linearized_interaction_list_ids;
+}
+
+std::vector<Cell*> Cell::get_direct_list() const
+{
+    std::vector<Cell*> linearized_direct_list;
+    std::map<unsigned int, Cell*>::const_iterator it = m_direct_list.begin();
+    for(; it != m_direct_list.end();  ++it)
+    {
+        linearized_direct_list.push_back(it->second);
+    }
+    return linearized_direct_list;
+}
+std::vector<unsigned int> Cell::get_direct_list_ids() const
+{
+    std::vector<unsigned int> linearized_direct_list_ids;
+    std::map<unsigned int, Cell*>::const_iterator it = m_direct_list.begin();
+    for(; it != m_direct_list.end();  ++it)
+    {
+        linearized_direct_list_ids.push_back(it->first);
+    }
+    return linearized_direct_list_ids;
 }
 
 bool Cell::has_level_grid_position() const

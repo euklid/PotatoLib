@@ -22,6 +22,9 @@ private:
 	virtual void build_tree();
 	virtual void upward_pass();
 	virtual void downward_pass();
+    virtual void evaluate();
+    virtual void m2l_downward_pass(Cell* cell);
+    virtual void l2l_downward_pass(Cell* cell);
 
 };
 
