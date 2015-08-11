@@ -41,10 +41,42 @@ void FMM2D::upward_pass()
     while (it->has_next())
     {
         Cell *cur_cell = it->next();
-        //ToDo: distinguish between leaf and non-leaf nodes.
-        std::vector<complex_t> moments = m_kernel->calc_moments_cmp(cur_cell->get_elements(),
-                                                                    cur_cell->get_center(),
-                                                                    m_terms);
+
+        // leaf node has to calculate its moments
+        if (cur_cell->is_leaf())
+        {
+            std::vector<complex_t> moments = m_kernel->calc_moments_cmp(cur_cell->get_elements(),
+                                                                        cur_cell->get_center(),
+                                                                        m_terms);
+            cur_cell->set_moments_cmp(moments);
+        }
+        else
+        {
+            // sum up translated moments from children
+            std::vector<Cell*> const & children = cur_cell->get_children();
+            Cell* cur_child = children[0];
+            std::vector<complex_t> moments;
+            m_kernel->M2M_cmp(cur_child->get_moments_cmp(),
+                              cur_child->get_center(),
+                              moments,
+                              cur_cell->get_center());
+            unsigned int num_children = children.size();
+            for(unsigned int i = 1; i<num_children; i++)
+            {
+                cur_child = children[i];
+                std::vector<complex_t> mom_summand;
+                m_kernel->M2M_cmp(cur_child->get_moments_cmp(),
+                                  cur_child->get_center(),
+                                  mom_summand,
+                                  cur_cell->get_center());
+                assert(mom_summand.size() == m_terms);
+                for(int j = 0; j<m_terms; j++)
+                {
+                    moments[j] += mom_summand[j];
+                }
+            }
+            cur_cell->set_moments_cmp(moments);
+        }
     }
 }
 
@@ -80,23 +112,19 @@ std::pair<double, Point> get_bounding_cube(std::vector<Element*> const & element
             }
         }
     }
-    
+
     double max_dist = 0;
     for (int i = 0; i< min.get_dimension(); i++) 
     {
         double dist = max[i]-min[i];
+        center[i] = (max[i]+min[i])/2;
         if (dist > max_dist) 
         {
             max_dist = dist;
         }
     }
     
-    center = min;
-    double half_dist = max_dist/2;
-    for (int i = 0; i< min.get_dimension(); i++) 
-    {
-        center[i] += half_dist;
-    }
-    
+    //extend cube a little bit in all directions to be sure to contain all elements
+    max_dist = 1.02*max_dist;
     return std::make_pair(max_dist,center);
 }

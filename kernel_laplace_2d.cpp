@@ -137,7 +137,4 @@ void Laplace2DKernel::M2L(std::vector<double> const & moments,
                           Point const & mom_center,
                           std::vector<double> & loc_exp,
                           Point const & loc_center) const
-{
-}
-
-
+{}
