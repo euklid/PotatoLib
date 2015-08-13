@@ -45,7 +45,7 @@ void FMM2D::upward_pass()
         // leaf node has to calculate its moments
         if (cur_cell->is_leaf())
         {
-            std::vector<complex_t> moments = m_kernel->calc_moments_cmp(cur_cell->get_elements(),
+            std::vector<complex_t> moments = m_kernel->calc_moments_cmp(cur_cell->get_source_elements(),
                                                                         cur_cell->get_center(),
                                                                         m_terms);
             cur_cell->set_moments_cmp(moments);
@@ -117,6 +117,38 @@ void FMM2D::l2l_downward_pass(Cell *cell)
     cell->set_local_exps_cmp(local_exp);
 }
 
+void FMM2D::direct_downward_pass(Cell *target, Cell *source)
+{
+    std::vector<Element*> & target_elements = target->get_target_elements();
+    std::vector<Element*> const & source_elements = source->get_source_elements();
+    unsigned int num_tgt_el = target_elements.size();
+    unsigned int num_src_el = source_elements.size();
+    for(unsigned int i = 0; i < num_tgt_el; i++)
+    {
+        double contrib = 0;
+        Element * t = target_elements[i];
+        for(unsigned int j = 0; j < num_src_el; j++)
+        {
+            Element * s = source_elements[j];
+            contrib += m_kernel->direct(*t,*s);
+        }
+        t->set_target_value(t->get_target_value()+contrib);
+    }
+}
+
+void FMM2D::evaluate_far_interactions(Cell* cell)
+{
+    std::vector<Element*> & target_elements = cell->get_target_elements();
+    complex_t cell_center = cell->get_center();
+    std::vector<complex_t> const & local_exps = cell->get_local_exps_cmp();
+    complex_t contrib;
+    for(int i = 0; i< target_elements.size(); i++)
+    {
+        contrib = m_kernel->L2element_cmp(local_exps,cell_center,*(target_elements[i]));
+        target_elements[i]->set_target_value(target_elements[i]->get_target_value() + contrib.real);
+    }
+}
+
 void FMM2D::downward_pass() 
 {
     Tree_Iterator* it = m_tree->downward_iterator();
@@ -128,19 +160,28 @@ void FMM2D::downward_pass()
         if(cur_cell->get_level() > 2) break;
         //M2L
         m2l_downward_pass(cur_cell);
+        // FIXME direct evaluation
+
     }
 
     //reached lvl 3 or higher --> use L2L and M2L
-    while (it->has_next()) {
+    do
+    {
         m2l_downward_pass(cur_cell);
         l2l_downward_pass(cur_cell);
+        // FIXME direct evaluation
+
+        // FIXME local expansions to cell if cell is leaf
+
         cur_cell = it->next();
-    }
+    } while (it->has_next());
 }
 
 void FMM2D::evaluate()
 {
-
+    // in Liu's version we do the direct evaluation while we are
+    // moving the tree downward because of the way the interaction
+    // and direct lists are built
 }
 
 /**

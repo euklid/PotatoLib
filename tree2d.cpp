@@ -55,7 +55,7 @@ void Tree2D::generate_cells(int max_elements)
         Cell* cur_cell = undivided_cells.front();
         undivided_cells.pop();
         
-        if(cur_cell->get_elements().size() == 0) continue;
+        if(cur_cell->number_of_elements() == 0) continue;
 
         m_cells.push_back(cur_cell);
         cur_cell->set_id(index);
@@ -72,7 +72,7 @@ void Tree2D::generate_cells(int max_elements)
         
 		if(cur_cell->number_of_elements() > max_elements)
         {
-            std::vector<Cell*> new_cells = cur_cell->divide();
+            std::vector<Cell*> & new_cells = cur_cell->divide();
             for (int i = 0; i<new_cells.size(); i++)
             {
                 new_cells[i]->set_level(cur_cell->get_level()+1);

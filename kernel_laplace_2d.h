@@ -42,6 +42,12 @@ public:
                          complex_t const & mom_in_center,
                          std::vector<complex_t> & mom_out,
                          complex_t const & mom_out_center) const;
+    virtual complex_t L2element_cmp(std::vector<complex_t> const & local_in,
+                               complex_t const & local_center,
+                               Element const & el) const ;
+    virtual double L2element(std::vector<double> const & local_in,
+                           Point loc_in_center,
+                           Element const & el) const;
 };
 
 #endif

@@ -5,15 +5,15 @@ double Laplace2DKernel::direct(Element const & el1, Element const & el2) const
     return direct_cmp(el1, el2).real;
 }
 
-complex_t Laplace2DKernel::direct_cmp(Element const & src, Element const & pt) const
+complex_t Laplace2DKernel::direct_cmp(const Element &el1, const Element &pt) const
 {
     // on identical points no calculation
-    if (src == pt)
+    if (el1 == pt)
     {
         return 0;
     }
     
-    return -complex_t::log(pt.get_cmp_value());
+    return -el1.get_value()*std::log(Point::dist(el1.get_position(),pt.get_position()));
 }
 
 std::vector<complex_t> Laplace2DKernel::calc_moments_cmp(const std::vector<Element *> &elements,
@@ -101,6 +101,25 @@ void Laplace2DKernel::M2M_cmp(std::vector<complex_t> const & mom_in,
             mom_out[i] += factors[i-j]*mom_in[j];
         }
     }
+}
+
+complex_t Laplace2DKernel::L2element_cmp(const std::vector<complex_t> &local_in, const complex_t &local_center, Element const &el) const
+{
+    complex_t dist = (complex_t)el.get_position() - local_center;
+    unsigned int num_local_exp = local_in.size();
+    complex_t fac;
+    complex_t res = local_in[0];
+    for(int i = 1; i<num_local_exp; i++)
+    {
+        fac*=dist/i;
+        res+=fac*local_in[i];
+    }
+    return res;
+}
+
+double Laplace2DKernel::L2element(const std::vector<double> &local_in, Point loc_in_center, const Element &el) const
+{
+    return 0;
 }
 
 void Laplace2DKernel::M2L_cmp(std::vector<complex_t> const & moments,

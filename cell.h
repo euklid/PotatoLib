@@ -20,10 +20,14 @@ public:
     virtual const std::vector<complex_t>& get_local_exps_cmp() const;
     virtual void set_local_exps(std::vector<double> const & local_exps);
     virtual void set_local_exps_cmp(std::vector<complex_t> const & local_exps_cmp);
-    virtual std::vector<Cell*> divide() = 0;
+    virtual std::vector<Cell*> & divide() = 0;
     virtual void set_elements(std::vector<Element*> const & elements);
-	virtual const std::vector<Element*>& get_elements() const;
-	virtual std::vector<Element*>& get_elements();
+    virtual const std::vector<Element*> get_elements() const;
+    virtual std::vector<Element *> get_elements();
+    virtual const std::vector<Element*> & get_source_elements() const;
+    virtual std::vector<Element*> & get_source_elements();
+    virtual const std::vector<Element*> & get_target_elements() const;
+    virtual std::vector<Element*> & get_target_elements();
 	virtual unsigned int number_of_elements() const;
     virtual void set_father(Cell* father);
     virtual Cell * const get_father() const;
@@ -54,7 +58,8 @@ protected:
     Cell* m_father;
     std::map<unsigned int, Cell*> m_interaction_list;
     std::map<unsigned int, Cell*> m_direct_list;
-    std::vector<Element*> m_elements;
+    std::vector<Element*> m_src_elements;
+    std::vector<Element*> m_target_elements;
     unsigned int m_id;
     unsigned int m_dim;
     unsigned int m_terms;

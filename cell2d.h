@@ -20,7 +20,7 @@ public:
      *  such that every element lies in exact one cell
      *  @return children
      */
-    virtual std::vector<Cell*> divide();
+    virtual std::vector<Cell *> &divide();
     virtual bool contains_point(Point const & pt) const;
 private:
 

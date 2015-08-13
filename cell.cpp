@@ -20,22 +20,59 @@ Cell::~Cell() {}
 
 void Cell::set_elements(std::vector<Element*> const & elements)
 {
-    m_elements = elements;
+    m_target_elements.clear();
+    m_src_elements.clear();
+    std::vector<Element*>::const_iterator it = elements.begin();
+    for(;it!=elements.end();++it)
+    {
+        if((*it)->get_type() & Element::SOURCE)
+        {
+            m_src_elements.push_back(*it);
+        }
+        if((*it)->get_type() & Element::TARGET)
+        {
+            m_target_elements.push_back(*it);
+        }
+    }
 }
 
-std::vector<Element*> & Cell::get_elements()
+std::vector<Element*> Cell::get_elements()
 {
-    return m_elements;
+    std::vector<Element*> elements(m_src_elements);
+    elements.insert(elements.end(),m_target_elements.begin(),m_target_elements.end());
+    return elements;
 }
 
-const std::vector<Element*> & Cell::get_elements() const
+const std::vector<Element *> &Cell::get_source_elements() const
 {
-    return m_elements;
+    return m_src_elements;
+}
+
+std::vector<Element*> & Cell::get_source_elements()
+{
+    return m_src_elements;
+}
+
+const std::vector<Element *> &Cell::get_target_elements() const
+{
+    return m_target_elements;
+}
+
+std::vector<Element*> & Cell::get_target_elements()
+{
+    return m_target_elements;
+}
+
+const std::vector<Element*> Cell::get_elements() const
+{
+    std::vector<Element*> elements(m_src_elements);
+    elements.insert(elements.end(),m_target_elements.begin(),m_target_elements.end());
+    return elements;
 }
 
 unsigned int Cell::number_of_elements() const
 {
-    return m_elements.size();
+    return m_src_elements.size() + m_target_elements.size();
 }
 
 Cell * const Cell::get_father() const

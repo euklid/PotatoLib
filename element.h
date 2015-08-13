@@ -2,13 +2,20 @@
 #define ELEMENT_H
 
 #include "point.h"
-#include "complex_t.h"
 
 class Element
 {
 public:
-    Element(unsigned int dimension) :
-        m_dim(dimension)
+
+    typedef enum
+    {
+        SOURCE = 1 << 0,
+        TARGET = 1 << 1
+    } element_type;
+
+    Element(unsigned int dimension, int type = SOURCE) :
+        m_dim(dimension),
+        m_type(type)
     {}
     
     virtual double get_value() const
@@ -16,19 +23,35 @@ public:
         return m_value;
     }
     
-    virtual complex_t get_cmp_value() const
+    virtual element_type get_type() const
     {
-        return m_cmp_value;
+        return (element_type)m_type;
     }
 
     virtual Point get_position() const = 0;
     
     virtual bool operator==(Element const & el) const = 0 ;
 
+    virtual void set_value(double val)
+    {
+        m_value = val;
+    }
+
+    virtual void set_target_value(double val)
+    {
+        m_target_value = val;
+    }
+
+    virtual double get_target_value() const
+    {
+        return m_target_value;
+    }
+
 protected:
     double m_value;
+    double m_target_value;
     unsigned int m_dim;
-    complex_t m_cmp_value;
+    int m_type;
 };
 
 #endif

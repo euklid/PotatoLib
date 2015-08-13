@@ -10,7 +10,7 @@ class Kernel
 public:
     Kernel(){}
     virtual double direct(Element const & el1, Element const & el2) const = 0;
-    virtual complex_t direct_cmp(Element const & el1, Element const & el2) const  = 0;
+    virtual complex_t direct_cmp( const Element & el1, Element const & el2) const  = 0;
     virtual std::vector<complex_t> calc_moments_cmp(std::vector<Element*> const & elements,
                                                     complex_t const & mom_center,
                                                     int num_moments) const = 0;
@@ -41,6 +41,12 @@ public:
                      complex_t const & mom_in_center,
                      std::vector<complex_t> & mom_out,
                      complex_t const & mom_out_center) const = 0;
+    virtual complex_t L2element_cmp(std::vector<complex_t> const & local_in,
+                               complex_t const & local_center,
+                               Element const & el) const = 0;
+    virtual double L2element(std::vector<double> const & local_in,
+                           Point loc_in_center,
+                           Element const & el) const = 0;
 
 };
 
