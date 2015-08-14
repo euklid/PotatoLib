@@ -25,7 +25,7 @@ private:
     virtual void evaluate();
     virtual void m2l_downward_pass(Cell* cell);
     virtual void l2l_downward_pass(Cell* cell);
-    virtual void direct_downward_pass(Cell* target, Cell* source);
+    virtual void direct_downward_pass(Cell* target);
     virtual void evaluate_far_interactions(Cell* cell);
 
 };

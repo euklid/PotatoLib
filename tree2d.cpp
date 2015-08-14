@@ -185,10 +185,6 @@ Tree2D_BFS_Iterator::Tree2D_BFS_Iterator(Tree2D* tree)
 
 Cell* Tree2D_BFS_Iterator::next()
 {
-    if (!has_next())
-    {
-        return NULL;
-    }
     m_last = m_cell_queue.front();
     m_cell_queue.pop();
     std::vector<Cell*> children = m_last->get_children();
@@ -242,16 +238,15 @@ Tree2D_Upward_Code_Iterator::Tree2D_Upward_Code_Iterator(
 {
     m_outer_size = m_lvl_ids.size();
     m_outer_idx = m_outer_size-1;
-    m_inner_size = m_lvl_ids[m_outer_idx].size();
-    m_inner_idx = 0;
+    if(m_outer_idx > -1)
+    {
+        m_inner_size = m_lvl_ids[m_outer_idx].size();
+    }
+    m_inner_idx = -1;
 }
 
 Cell* Tree2D_Upward_Code_Iterator::next()
 {
-#if DEBUG
-    assert(m_cells.size() > m_lvl_ids[m_outer_idx][m_inner_idx]);
-#endif
-    Cell* res = m_cells[m_lvl_ids[m_outer_idx][m_inner_idx]];
     ++m_inner_idx;
     if (m_inner_idx == m_inner_size)
     {
@@ -259,7 +254,10 @@ Cell* Tree2D_Upward_Code_Iterator::next()
         m_outer_idx--;
         m_inner_size = m_lvl_ids[m_outer_idx].size();
     }
-    return res;
+#if DEBUG
+    assert(m_cells.size() > m_lvl_ids[m_outer_idx][m_inner_idx]);
+#endif
+    return m_cells[m_lvl_ids[m_outer_idx][m_inner_idx]];
 }
 
 bool Tree2D_Upward_Code_Iterator::has_next()
@@ -279,16 +277,15 @@ Tree2D_Downward_Code_Iterator::Tree2D_Downward_Code_Iterator(
 {
     m_outer_size = m_lvl_ids.size();
     m_outer_idx = 2;
-    m_inner_size = m_lvl_ids[m_outer_idx].size();
-    m_inner_idx = 0;
+    if(m_outer_idx < m_outer_size)
+    {
+        m_inner_size = m_lvl_ids[m_outer_idx].size();
+    }
+    m_inner_idx = -1;
 }
 
 Cell *Tree2D_Downward_Code_Iterator::next()
 {
-#if DEBUG
-    assert(m_cells.size() > m_lvl_ids[m_outer_idx][m_inner_idx]);
-#endif
-    Cell* res = m_cells[m_lvl_ids[m_outer_idx][m_inner_idx]];
     ++m_inner_idx;
     if (m_inner_idx == m_inner_size)
     {
@@ -296,7 +293,11 @@ Cell *Tree2D_Downward_Code_Iterator::next()
         m_outer_idx++;
         m_inner_size = m_lvl_ids[m_outer_idx].size();
     }
-    return res;
+    ++m_inner_idx;
+#if DEBUG
+    assert(m_cells.size() > m_lvl_ids[m_outer_idx][m_inner_idx]);
+#endif
+    return m_cells[m_lvl_ids[m_outer_idx][m_inner_idx]];
 }
 
 bool Tree2D_Downward_Code_Iterator::has_next()

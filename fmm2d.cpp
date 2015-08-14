@@ -79,6 +79,7 @@ void FMM2D::upward_pass()
         }
     }
 }
+
 template<class T>
 void add_moments_cmp(std::vector<T> const & summand, std::vector<T> & moments)
 {
@@ -117,10 +118,26 @@ void FMM2D::l2l_downward_pass(Cell *cell)
     cell->set_local_exps_cmp(local_exp);
 }
 
-void FMM2D::direct_downward_pass(Cell *target, Cell *source)
+/**
+ * @brief FMM2D::direct_downward_pass evaluates all direct interactions of cell target
+ *        with its interaction list
+ * @param target target cell
+ */
+void FMM2D::direct_downward_pass(Cell *target)
 {
-    std::vector<Element*> & target_elements = target->get_target_elements();
-    std::vector<Element*> const & source_elements = source->get_source_elements();
+    std::vector<Cell*> direct_neighbours = target->get_direct_list();
+    unsigned int num_dir_neighbours = direct_neighbours.size();
+    if (num_dir_neighbours == 0) return;
+    std::vector<Element*> const & target_elements = target->get_target_elements();
+    std::vector<Element*> source_elements;
+
+    //aggregate all source elements
+    for(unsigned int i = 0; i<num_dir_neighbours; i++)
+    {
+        source_elements.insert(source_elements.end(),
+                               direct_neighbours[i]->get_source_elements().begin(),
+                               direct_neighbours[i]->get_source_elements().end());
+    }
     unsigned int num_tgt_el = target_elements.size();
     unsigned int num_src_el = source_elements.size();
     for(unsigned int i = 0; i < num_tgt_el; i++)
@@ -154,27 +171,37 @@ void FMM2D::downward_pass()
     Tree_Iterator* it = m_tree->downward_iterator();
     // level 2 only M2L and direct, no L2L
     Cell* cur_cell;
+
     while(it->has_next())
     {
         cur_cell = it->next();
         if(cur_cell->get_level() > 2) break;
         //M2L
         m2l_downward_pass(cur_cell);
-        // FIXME direct evaluation
-
+        direct_downward_pass(cur_cell);
     }
 
     //reached lvl 3 or higher --> use L2L and M2L
-    do
+    while(1)
     {
         m2l_downward_pass(cur_cell);
         l2l_downward_pass(cur_cell);
-        // FIXME direct evaluation
 
-        // FIXME local expansions to cell if cell is leaf
+        // because of Liu's direct lists we need to do this for each cell
+        direct_downward_pass(cur_cell);
 
-        cur_cell = it->next();
-    } while (it->has_next());
+        if(cur_cell->is_leaf())
+        {
+            l2l_downward_pass(cur_cell);
+        }
+        if(it->has_next())
+        {
+            cur_cell = it->next();
+        } else //last element, leave loop
+        {
+            break;
+        }
+    }
 }
 
 void FMM2D::evaluate()

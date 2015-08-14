@@ -13,9 +13,10 @@ public:
         TARGET = 1 << 1
     } element_type;
 
-    Element(unsigned int dimension, int type = SOURCE) :
+    Element(unsigned int dimension, unsigned int id, int type = SOURCE) :
         m_dim(dimension),
-        m_type(type)
+        m_type(type),
+        m_id(id)
     {}
     
     virtual double get_value() const
@@ -51,6 +52,7 @@ protected:
     double m_value;
     double m_target_value;
     unsigned int m_dim;
+    unsigned int m_id;
     int m_type;
 };
 
