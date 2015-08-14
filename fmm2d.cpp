@@ -155,7 +155,7 @@ void FMM2D::direct_downward_pass(Cell *target)
 
 void FMM2D::evaluate_far_interactions(Cell* cell)
 {
-    std::vector<Element*> & target_elements = cell->get_target_elements();
+    std::vector<Element*> const & target_elements = cell->get_target_elements();
     complex_t cell_center = cell->get_center();
     std::vector<complex_t> const & local_exps = cell->get_local_exps_cmp();
     complex_t contrib;

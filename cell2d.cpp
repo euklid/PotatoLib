@@ -19,14 +19,67 @@ std::vector<Cell*> & Cell2D::divide()
     // don't want to assign an element to two or more cells
 
 
-    // TODO: instead of searching the cell an element belongs to, use
+    //       instead of searching the cell an element belongs to, use
     //       multiple sorts after their coordinates (smaller or larger than
     //       center coordinate) and use this information to directly assign
-    //       the element to a cell. --> source: FMBEM book implementation details
+    //       the element to a cell.
 
-    std::vector<bool> copied_src_elements(m_src_elements.size(),false);
-    std::vector<bool> copied_target_elements(m_target_elements.size(), false);
-    for (int i = 1; i>-2; i=i-2)
+    //std::vector<bool> copied_src_elements(m_src_elements.size(),false);
+    //std::vector<bool> copied_target_elements(m_target_elements.size(), false);
+    unsigned int num_src_elements = m_src_elements.size();
+    unsigned int num_tgt_elements = m_target_elements.size();
+    std::vector<Cell*> new_cells;
+    std::vector<std::vector<Element*> > new_cells_src_elements;
+    std::vector<std::vector<Element*> > new_cells_tgt_elements;
+    int max_childs = 1 << m_dim;
+
+    //create buckets == cells
+    for(int i = 0; i<max_childs; i++)
+    {
+        Point new_center(m_dim);
+        for(int j = 0; j<m_dim; j++)
+        {
+            int dir = (((i & (1<<j))>>j)<<1)-1; //1 if (j+1)-lowest bit is 1, otherwise -1
+            new_center[j] = m_center[j] + dir * quarter_size;
+        }
+        Cell2D* new_cell = new Cell2D(m_terms,half_size, new_center);
+        new_cell->set_father(this);
+        new_cells.push_back(new_cell);
+        new_cells_src_elements.push_back(std::vector<Element*>());
+        new_cells_tgt_elements.push_back(std::vector<Element*>());
+    }
+    //identify buckets for each element
+    int cell_bucket ;
+    for(int j = 0; j<num_src_elements; j++)
+    {
+        cell_bucket = 0;
+        for(int i = 0; i<m_dim; i++)
+        {
+            cell_bucket+= (m_src_elements[j]->get_position()[j] > m_center[j]) << i;
+        }
+        new_cells_src_elements[cell_bucket].push_back(m_src_elements[j]);
+    }
+    for(int j = 0; j<num_tgt_elements; j++)
+    {
+        cell_bucket = 0;
+        for(int i = 0; i<m_dim; i++)
+        {
+            cell_bucket+=(m_target_elements[j]->get_position()[j] > m_center[j]) << i;
+        }
+        new_cells_tgt_elements[cell_bucket].push_back(m_target_elements[j]);
+    }
+
+    for(int i = 0; i<max_childs; i++)
+    {
+        new_cells[i]->set_target_elements(new_cells_tgt_elements[i]);
+        new_cells[i]->set_source_elements(new_cells_src_elements[i]);
+        if(new_cells[i]->number_of_elements())
+        {
+            m_children.push_back(new_cells[i]);
+        }
+    }
+    return m_children;
+    /*for (int i = 1; i>-2; i=i-2)
     {
         for (int j = -1; j<2; j=j+2)
         {
@@ -74,6 +127,7 @@ std::vector<Cell*> & Cell2D::divide()
     }
     //set children
     return m_children;
+    */
 }
 
 bool Cell2D::contains_point(Point const &pt) const

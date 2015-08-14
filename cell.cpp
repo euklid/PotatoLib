@@ -36,32 +36,57 @@ void Cell::set_elements(std::vector<Element*> const & elements)
     }
 }
 
-std::vector<Element*> Cell::get_elements()
+/*std::vector<Element*> Cell::get_elements()
 {
     std::vector<Element*> elements(m_src_elements);
     elements.insert(elements.end(),m_target_elements.begin(),m_target_elements.end());
     return elements;
 }
+*/
 
 const std::vector<Element *> &Cell::get_source_elements() const
 {
     return m_src_elements;
 }
 
-std::vector<Element*> & Cell::get_source_elements()
+void Cell::set_source_elements(const std::vector<Element *> &el)
+{
+#if DEBUG
+    for(int i = 0; i< el.size(); i++)
+    {
+        assert(el[i]->get_type()==Element::SOURCE);
+    }
+#endif
+    m_src_elements = el;
+}
+
+/*std::vector<Element*> & Cell::get_source_elements()
 {
     return m_src_elements;
 }
+*/
 
 const std::vector<Element *> &Cell::get_target_elements() const
 {
     return m_target_elements;
 }
 
-std::vector<Element*> & Cell::get_target_elements()
+void Cell::set_target_elements(const std::vector<Element *> &el)
+{
+#if DEBUG
+    for(int i = 0; i< el.size(); i++)
+    {
+        assert(el[i]->get_type()==Element::TARGET);
+    }
+#endif
+    m_target_elements = el;
+}
+
+/*std::vector<Element*> & Cell::get_target_elements()
 {
     return m_target_elements;
 }
+*/
 
 const std::vector<Element*> Cell::get_elements() const
 {

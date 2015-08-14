@@ -23,11 +23,10 @@ public:
     virtual std::vector<Cell*> & divide() = 0;
     virtual void set_elements(std::vector<Element*> const & elements);
     virtual const std::vector<Element*> get_elements() const;
-    virtual std::vector<Element *> get_elements();
     virtual const std::vector<Element*> & get_source_elements() const;
-    virtual std::vector<Element*> & get_source_elements();
+    virtual void set_source_elements(std::vector<Element*> const & el);
     virtual const std::vector<Element*> & get_target_elements() const;
-    virtual std::vector<Element*> & get_target_elements();
+    virtual void set_target_elements(std::vector<Element*> const & el);
 	virtual unsigned int number_of_elements() const;
     virtual void set_father(Cell* father);
     virtual Cell * const get_father() const;
