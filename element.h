@@ -1,7 +1,7 @@
 #ifndef ELEMENT_H
 #define ELEMENT_H
 
-#include "point.h"
+class Point;
 
 class Element
 {
@@ -15,8 +15,8 @@ public:
 
     Element(unsigned int dimension, unsigned int id, int type = SOURCE) :
         m_dim(dimension),
-        m_type(type),
-        m_id(id)
+        m_id(id),
+        m_type(type)
     {}
     
     virtual double get_value() const
@@ -29,9 +29,7 @@ public:
         return (element_type)m_type;
     }
 
-    virtual Point get_position() const = 0;
-    
-    virtual bool operator==(Element const & el) const = 0 ;
+    virtual const Point & get_position() const = 0;
 
     virtual void set_value(double val)
     {

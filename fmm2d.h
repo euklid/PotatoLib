@@ -17,7 +17,8 @@ public:
 	FMM2D(std::vector<Element*> const & elements, 
          unsigned int terms, 
          unsigned int max_cell_elements);
-	virtual std::vector<double> calculate();
+	virtual void calculate();
+    virtual void recalculate();
 private:
 	virtual void build_tree();
 	virtual void upward_pass();

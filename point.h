@@ -18,7 +18,7 @@ public:
     unsigned int get_dimension() const;
     Point operator-(Point const & p1) const;
     Point operator+(Point const & p1) const;
-    
+    bool operator==(Point const & p) const;
 
 private:
     std::vector<double> m_coord;

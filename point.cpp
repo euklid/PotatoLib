@@ -76,6 +76,19 @@ Point Point::operator-(const Point& p1) const
     return res;
 }
 
+bool Point::operator==(const Point &p) const
+{
+    if (p.m_dim != m_dim) {
+        return false;
+    }
+    for (int i = 0; i<m_dim; i++) {
+        if (m_coord[i] != p.m_coord[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
 unsigned int Point::get_dimension() const
 {
     return m_dim;

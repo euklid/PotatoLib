@@ -4,6 +4,7 @@
 #include "element.h"
 #include "kernel.h"
 #include "tree.h"
+#include <map>
 
 class FMM
 {
@@ -13,7 +14,14 @@ public:
         unsigned int terms, 
         unsigned int max_cell_elements);
     virtual void set_kernel(Kernel const & kernel);
-    virtual std::vector<double> calculate() = 0;
+    virtual void calculate() = 0;
+    
+    /**
+     *  using the already constructed tree and given elements (that may have
+     *  different source values) reevaluate the target values
+     *  (source value, target value) of element
+     */
+    virtual void recalculate() = 0;
 
 protected:
     virtual void build_tree() = 0;

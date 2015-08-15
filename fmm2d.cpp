@@ -17,9 +17,15 @@ FMM2D::FMM2D(std::vector<Element*> const & elements,
 {
 }
 
-std::vector<double> FMM2D::calculate() 
+void FMM2D::calculate()
 {
     build_tree();
+    upward_pass();
+    downward_pass();
+}
+
+void FMM2D::recalculate()
+{
     upward_pass();
     downward_pass();
 }

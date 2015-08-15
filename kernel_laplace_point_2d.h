@@ -2,6 +2,7 @@
 #define LAPLACE2D_H
 
 #include "kernel.h"
+#include "point_element.h"
 
 /**
  *  2-dimensional Laplace kernel for particle elements
@@ -10,8 +11,8 @@ class Laplace2DKernel : public Kernel {
 
 public:
     Laplace2DKernel(){}
-    virtual double direct(Element const & el1, Element const & el2) const;
-    virtual complex_t direct_cmp(Element const & el1, Element const & el2) const;
+    virtual double direct(Element const & src, Element const & target) const;
+    virtual complex_t direct_cmp(Element const & src, Element const & target) const;
     virtual std::vector<complex_t> calc_moments_cmp(std::vector<Element*> const & elements,
                                                     complex_t const & mom_center,
                                                     int num_moments) const;

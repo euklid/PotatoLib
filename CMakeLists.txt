@@ -10,12 +10,13 @@ set(SOURCES
             fmm2d.cpp
             tree2d.cpp
             cell2d.cpp
-            kernel_laplace_2d.cpp
+            kernel_laplace_point_2d.cpp
 )
 
 set(HEADERS
             cell.h
             element.h
+            point_element.h
             kernel.h
             tree.h
             point.h
@@ -24,7 +25,7 @@ set(HEADERS
             tree2d.h
             cell2d.h
             complex_t.h
-            kernel_laplace_2d.h
+            kernel_laplace_point_2d.h
 )
 
 #add_executable(${PROJECT_NAME} ${SRC_LIST})

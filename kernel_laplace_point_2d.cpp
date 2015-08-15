@@ -1,19 +1,25 @@
-#include "kernel_laplace_2d.h"
+#include "kernel_laplace_point_2d.h"
 
-double Laplace2DKernel::direct(Element const & el1, Element const & el2) const
-{
-    return direct_cmp(el1, el2).real;
-}
-
-complex_t Laplace2DKernel::direct_cmp(const Element &el1, const Element &pt) const
+double Laplace2DKernel::direct(Element const & src, Element const & target) const
 {
     // on identical points no calculation
-    if (el1 == pt)
+    
+    if(((PointElement&)src).get_position() == ((PointElement&)target).get_position())
+    {
+        return 0;
+    }
+    return -src.get_value()*std::log(Point::dist(src.get_position(),target.get_position()));
+}
+
+complex_t Laplace2DKernel::direct_cmp(const Element &src, const Element &target) const
+{
+    // on identical points no calculation
+    if(((PointElement&)src).get_position() == ((PointElement&)target).get_position())
     {
         return 0;
     }
     
-    return -el1.get_value()*std::log(Point::dist(el1.get_position(),pt.get_position()));
+    return -src.get_value()*std::log(Point::dist(src.get_position(),target.get_position()));
 }
 
 std::vector<complex_t> Laplace2DKernel::calc_moments_cmp(const std::vector<Element *> &elements,
