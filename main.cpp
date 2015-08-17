@@ -5,6 +5,7 @@
 #include "point.h"
 #include "fmm2d.h"
 #include "kernel_laplace_point_2d.h"
+#include "fmm_gmres_solver.h"
 
 int main()
 {

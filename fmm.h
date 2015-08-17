@@ -4,7 +4,7 @@
 #include "element.h"
 #include "kernel.h"
 #include "tree.h"
-#include <map>
+#include <vector>
 
 class FMM
 {

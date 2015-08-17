@@ -28,6 +28,9 @@ void FMM2D::calculate()
 
 void FMM2D::recalculate()
 {
+    if (!m_tree) {
+        build_tree();
+    }
     upward_pass();
     downward_pass();
 }

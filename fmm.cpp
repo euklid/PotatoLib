@@ -7,6 +7,7 @@ FMM::FMM(std::vector<Element*> const & src_elements,
          unsigned int max_cell_elements) :
     m_src_elements(src_elements),
     m_tgt_elements(tgt_elements),
+    m_tree(NULL),
     m_exp_terms(exp_terms),
     m_loc_terms(loc_terms),
     m_max_cell_elements(max_cell_elements)

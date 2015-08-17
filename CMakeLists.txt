@@ -1,6 +1,9 @@
 project(PotatoLib)
 cmake_minimum_required(VERSION 2.8)
 #aux_source_directory(. SRC_LIST)
+
+include_directories(/usr/local/include/)
+
 set(SOURCES
             cell.cpp
             main.cpp
@@ -11,6 +14,7 @@ set(SOURCES
             tree2d.cpp
             cell2d.cpp
             kernel_laplace_point_2d.cpp
+            fmm_gmres_solver.cpp
 )
 
 set(HEADERS
@@ -26,6 +30,8 @@ set(HEADERS
             cell2d.h
             complex_t.h
             kernel_laplace_point_2d.h
+            gmres.h
+            fmm_gmres_solver.h
 )
 
 #add_executable(${PROJECT_NAME} ${SRC_LIST})
