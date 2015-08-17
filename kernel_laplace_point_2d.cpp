@@ -2,6 +2,8 @@
 
 double Laplace2DKernel::direct(Element const & src, Element const & target) const
 {
+    assert(src.get_type() & Element::SOURCE);
+    assert(target.get_type() & Element::TARGET);
     // on identical points no calculation
     
     if(((PointElement&)src).get_position() == ((PointElement&)target).get_position())
@@ -13,6 +15,8 @@ double Laplace2DKernel::direct(Element const & src, Element const & target) cons
 
 complex_t Laplace2DKernel::direct_cmp(const Element &src, const Element &target) const
 {
+    assert(src.get_type() & Element::SOURCE);
+    assert(target.get_type() & Element::TARGET);
     // on identical points no calculation
     if(((PointElement&)src).get_position() == ((PointElement&)target).get_position())
     {
@@ -128,6 +132,8 @@ double Laplace2DKernel::L2element(const std::vector<double> &local_in, Point loc
     return 0;
 }
 
+
+// FIXME adjust to different sizes of local expansions and moments
 void Laplace2DKernel::M2L_cmp(std::vector<complex_t> const & moments,
                               complex_t const & mom_center,
                               std::vector<complex_t> & loc_exp,
@@ -138,10 +144,10 @@ void Laplace2DKernel::M2L_cmp(std::vector<complex_t> const & moments,
     assert(mom_center != loc_center);
 
     const complex_t diff = loc_center-mom_center;
-    std::vector<complex_t> factors(2*moments.size(), 0);
+    std::vector<complex_t> factors(moments.size()+loc_exp.size(), 0);
     factors[0] = -complex_t::log(diff);
     factors[1] = complex_t(1)/diff;
-    for(int i=2; i<2*moments.size(); i++)
+    for(int i=2; i<factors.size(); i++)
     {
         factors[i] = (factors[i-1]*(i-1))/diff;
     }
@@ -151,7 +157,7 @@ void Laplace2DKernel::M2L_cmp(std::vector<complex_t> const & moments,
     {
         for(int j = 0; j<moments.size(); j++)
         {
-            loc_exp[i] += factors[i+j]*moments[i];
+            loc_exp[i] += factors[i+j]*moments[j];
         }
         loc_exp[i] *= sign;
         sign *= -1;

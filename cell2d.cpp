@@ -9,8 +9,8 @@
 #include <cmath>
 
 
-Cell2D::Cell2D(unsigned int terms, double size, Point const & center)
-    : Cell(2, terms, size, center) {}
+Cell2D::Cell2D( double size, Point const & center)
+    : Cell(2, size, center) {}
 
 std::vector<Cell*> & Cell2D::divide()
 {
@@ -42,7 +42,7 @@ std::vector<Cell*> & Cell2D::divide()
             int dir = (((i & (1<<j))>>j)<<1)-1; //1 if (j+1)-lowest bit is 1, otherwise -1
             new_center[j] = m_center[j] + dir * quarter_size;
         }
-        Cell2D* new_cell = new Cell2D(m_terms,half_size, new_center);
+        Cell2D* new_cell = new Cell2D(half_size, new_center);
         new_cell->set_father(this);
         new_cells.push_back(new_cell);
         new_cells_src_elements.push_back(std::vector<Element*>());

@@ -10,10 +10,12 @@
 
 std::pair<double,Point> get_bounding_cube(const std::vector<Element*>& elements);
 
-FMM2D::FMM2D(std::vector<Element*> const & elements, 
-        unsigned int terms, 
-        unsigned int max_cell_elements) : 
-	FMM(elements, terms, max_cell_elements) 
+FMM2D::FMM2D(std::vector<Element*> const & src_elements,
+             std::vector<Element*> const & tgt_elements,
+             unsigned int exp_terms,
+             unsigned int loc_terms,
+             unsigned int max_cell_elements) :
+	FMM(src_elements, tgt_elements, exp_terms, loc_terms, max_cell_elements)
 {
 }
 
@@ -34,9 +36,10 @@ void FMM2D::build_tree()
 {
     m_tree = new Tree2D;
     std::pair<double,Point> bounding_box = get_bounding_cube(m_elements);
-    Cell2D* root = new Cell2D(m_terms,bounding_box.first, bounding_box.second);
+    Cell2D* root = new Cell2D(bounding_box.first, bounding_box.second);
     root->set_father(0);
-    root->set_elements(m_elements);
+    root->set_source_elements(m_src_elements);
+    root->set_target_elements(m_tgt_elements);
     m_tree->set_root(root);
     m_tree->build_tree(m_max_cell_elements);
 }
@@ -53,7 +56,7 @@ void FMM2D::upward_pass()
         {
             std::vector<complex_t> moments = m_kernel->calc_moments_cmp(cur_cell->get_source_elements(),
                                                                         cur_cell->get_center(),
-                                                                        m_terms);
+                                                                        m_exp_terms);
             cur_cell->set_moments_cmp(moments);
         }
         else
@@ -75,8 +78,8 @@ void FMM2D::upward_pass()
                                   cur_child->get_center(),
                                   mom_summand,
                                   cur_cell->get_center());
-                assert(mom_summand.size() == m_terms);
-                for(int j = 0; j<m_terms; j++)
+                assert(mom_summand.size() == m_exp_terms);
+                for(int j = 0; j<m_exp_terms; j++)
                 {
                     moments[j] += mom_summand[j];
                 }
@@ -116,7 +119,7 @@ void FMM2D::m2l_downward_pass(Cell* cur_cell)
 void FMM2D::l2l_downward_pass(Cell *cell)
 {
     std::vector<complex_t> local_exp = cell->get_local_exps_cmp();
-    std::vector<complex_t> shifted_local_exp(m_terms,0);
+    std::vector<complex_t> shifted_local_exp(m_loc_terms,0);
     Cell* father = cell->get_father();
     std::vector<complex_t> const & father_local_exp = father->get_local_exps_cmp();
     m_kernel->L2L_cmp(father_local_exp,father->get_center(),shifted_local_exp,cell->get_center());

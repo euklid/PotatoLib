@@ -1,16 +1,11 @@
 #include "cell.h"
 
-Cell::Cell(unsigned int dimension, unsigned int terms, double size, Point const & center) :
+Cell::Cell(unsigned int dimension, double size, Point const & center) :
     m_dim(dimension),
-    m_terms(terms),
-    m_size(size),
     m_center(center),
     m_has_moment(false),
     m_has_grid_pos(false),
-    m_moments(std::vector<double>(terms,0)),
-    m_moments_cmp(std::vector<complex_t>(terms,0)),
-    m_local_exps(std::vector<double>(terms,0)),
-    m_local_exps_cmp(std::vector<complex_t>(terms,0))
+    m_size(size)
 {
     assert(m_size > 0);
     m_grid_pos = Point(dimension);
@@ -18,8 +13,8 @@ Cell::Cell(unsigned int dimension, unsigned int terms, double size, Point const 
 
 Cell::~Cell() {}
 
-void Cell::set_elements(std::vector<Element*> const & elements)
-{
+/*void Cell::set_elements(std::vector<Element*> const & elements)
+
     m_target_elements.clear();
     m_src_elements.clear();
     std::vector<Element*>::const_iterator it = elements.begin();
@@ -35,6 +30,7 @@ void Cell::set_elements(std::vector<Element*> const & elements)
         }
     }
 }
+*/
 
 /*std::vector<Element*> Cell::get_elements()
 {

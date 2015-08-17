@@ -11,7 +11,7 @@ class Cell
 {
 public:
     Cell();
-    Cell(unsigned int dimension, unsigned int terms, double size, Point const & center);
+    Cell(unsigned int dimension, double size, Point const & center);
     virtual const std::vector<double> & get_moments() const;
     virtual const std::vector<complex_t> & get_moments_cmp() const;
     virtual void set_moments(std::vector<double> const & moments);
@@ -21,7 +21,7 @@ public:
     virtual void set_local_exps(std::vector<double> const & local_exps);
     virtual void set_local_exps_cmp(std::vector<complex_t> const & local_exps_cmp);
     virtual std::vector<Cell*> & divide() = 0;
-    virtual void set_elements(std::vector<Element*> const & elements);
+    //virtual void set_elements(std::vector<Element*> const & elements);
     virtual const std::vector<Element*> get_elements() const;
     virtual const std::vector<Element*> & get_source_elements() const;
     virtual void set_source_elements(std::vector<Element*> const & el);
@@ -61,7 +61,6 @@ protected:
     std::vector<Element*> m_target_elements;
     unsigned int m_id;
     unsigned int m_dim;
-    unsigned int m_terms;
     Point m_center;
     Point m_grid_pos;
     std::vector<double> m_moments;

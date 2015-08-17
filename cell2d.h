@@ -12,7 +12,7 @@
 
 class Cell2D : public Cell   {
 public:
-    Cell2D(unsigned int terms, double size, Point const & center);
+    Cell2D(double size, Point const & center);
 
     /**
      *  divides the cell into 4 cells, sets them as children and cell is

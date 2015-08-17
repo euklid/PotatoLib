@@ -14,9 +14,11 @@
 class FMM2D : public FMM
 {
 public:
-	FMM2D(std::vector<Element*> const & elements, 
-         unsigned int terms, 
-         unsigned int max_cell_elements);
+	FMM2D(std::vector<Element*> const & src_elements,
+          std::vector<Element*> const & tgt_elements,
+          unsigned int exp_terms,
+          unsigned int loc_terms,
+          unsigned int max_cell_elements);
 	virtual void calculate();
     virtual void recalculate();
 private:
