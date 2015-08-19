@@ -50,6 +50,21 @@ public:
     virtual bool has_level_grid_position() const;
     virtual Point const & get_level_grid_position() const;
     virtual void set_level_grid_position(Point const & grid_pos);
+    
+    /**
+     * for the preconditioning set diagonal start position of leaf block matrix 
+     * in preconditioner. This is equal to the sum of all elements of all leaves
+     * that came before this one
+     * @param leaf_block_start_pos 0-index based diagonal position of first 
+     *        diagonal element of block matrix
+     */
+    virtual void set_leaf_block_start_pos(int leaf_block_start_pos);
+    
+    /**
+     * see set_leaf_block_start_pos(int leaf_block_start_pos)
+     * @return 
+     */
+    virtual int get_leaf_block_start_pos() const;
     virtual ~Cell();
 
 protected:
@@ -71,6 +86,7 @@ protected:
     bool m_has_grid_pos;
     double m_size;
     unsigned int m_level;
+    int m_leaf_block_start_pos;
 };
 
 #endif

@@ -11,8 +11,8 @@ class Laplace2DKernel : public Kernel {
 
 public:
     Laplace2DKernel(){}
-    virtual double direct(Element const & src, Element const & target) const;
-    virtual complex_t direct_cmp(Element const & src, Element const & target) const;
+    virtual double direct(Element const & target, Element const & src) const;
+    virtual complex_t direct_cmp(Element const & target, Element const & src) const;
     virtual std::vector<complex_t> calc_moments_cmp(std::vector<Element*> const & elements,
                                                     complex_t const & mom_center,
                                                     int num_moments) const;

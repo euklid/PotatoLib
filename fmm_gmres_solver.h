@@ -9,10 +9,12 @@ public:
     /**
      *  Use a FMM to calculate missing boundary values for given
      *  boundary conditions using GMRES
+     *  Caveats: only use with source elements being target elements 
+     *  simultaneously!
      */
     FMM_GMRES_Solver(FMM  & fmm,
-                     std::vector<double> const & boundary_goals,
-                     std::vector<double> const & solution);
+                     std::vector<double> & boundary_goals,
+                     std::vector<double> & solution);
     
     /**
      *  solve with GMRES
@@ -27,8 +29,8 @@ public:
     
 private:
     FMM & m_fmm;
-    std::vector<double> const & m_boundary_goals;
-    std::vector<double> const & m_solution;
+    std::vector<double> & m_boundary_goals;
+    std::vector<double> & m_solution;
 };
 
 

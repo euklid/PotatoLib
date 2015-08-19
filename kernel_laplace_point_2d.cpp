@@ -1,6 +1,6 @@
 #include "kernel_laplace_point_2d.h"
 
-double Laplace2DKernel::direct(Element const & src, Element const & target) const
+double Laplace2DKernel::direct(Element const & target, Element const & src) const
 {
     assert(src.get_type() & Element::SOURCE);
     assert(target.get_type() & Element::TARGET);
@@ -10,10 +10,10 @@ double Laplace2DKernel::direct(Element const & src, Element const & target) cons
     {
         return 0;
     }
-    return -src.get_value()*std::log(Point::dist(src.get_position(),target.get_position()));
+    return std::log(Point::dist(src.get_position(),target.get_position()));
 }
 
-complex_t Laplace2DKernel::direct_cmp(const Element &src, const Element &target) const
+complex_t Laplace2DKernel::direct_cmp(const Element &target, const Element &src) const
 {
     assert(src.get_type() & Element::SOURCE);
     assert(target.get_type() & Element::TARGET);
@@ -23,7 +23,7 @@ complex_t Laplace2DKernel::direct_cmp(const Element &src, const Element &target)
         return 0;
     }
     
-    return -src.get_value()*std::log(Point::dist(src.get_position(),target.get_position()));
+    return std::log(Point::dist(src.get_position(),target.get_position()));
 }
 
 std::vector<complex_t> Laplace2DKernel::calc_moments_cmp(const std::vector<Element *> &elements,
@@ -133,7 +133,6 @@ double Laplace2DKernel::L2element(const std::vector<double> &local_in, Point loc
 }
 
 
-// FIXME adjust to different sizes of local expansions and moments
 void Laplace2DKernel::M2L_cmp(std::vector<complex_t> const & moments,
                               complex_t const & mom_center,
                               std::vector<complex_t> & loc_exp,

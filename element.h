@@ -45,6 +45,11 @@ public:
     {
         return m_target_value;
     }
+    
+    virtual unsigned int get_id() const
+    {
+        return m_id;
+    }
 
 protected:
     double m_value;

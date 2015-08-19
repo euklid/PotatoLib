@@ -20,8 +20,15 @@
 //*****************************************************************
 
 
-#include <math.h>
 
+template < class Real >
+Real
+template_abs(Real x)
+{
+  return (x > 0 ? x : -x);
+}
+
+#include <math.h>
 
 template<class Real>
 void GeneratePlaneRotation(Real &dx, Real &dy, Real &cs, Real &sn)
@@ -29,7 +36,7 @@ void GeneratePlaneRotation(Real &dx, Real &dy, Real &cs, Real &sn)
     if (dy == 0.0) {
         cs = 1.0;
         sn = 0.0;
-    } else if (abs(dy) > abs(dx)) {
+    } else if (template_abs(dy) > template_abs(dx)) {
         Real temp = dx / dy;
         sn = 1.0 / sqrt( 1.0 + temp*temp );
         cs = temp * sn;
@@ -67,27 +74,21 @@ Update(Vector &x, int k, Matrix &h, Vector &s, Vector v[])
 }
 
 
-template < class Real >
-Real 
-abs(Real x)
-{
-  return (x > 0 ? x : -x);
-}
-
-
 template < class Operator, class Vector, class Preconditioner,
            class Matrix, class Real >
 int 
-GMRES(const Operator &A, Vector &x, const Vector &b,
-      const Preconditioner &M, Matrix &H, int &m, int &max_iter,
+GMRES(Operator &A, Vector &x, const Vector &b,
+      Preconditioner &M, Matrix &H, int &m, int &max_iter,
       Real &tol)
 {
   Real resid;
   int i, j = 1, k;
   Vector s(m+1), cs(m+1), sn(m+1), w;
   
+  Vector pre_r = b - A*x;
+  Vector r = M.solve(pre_r);
+  
   Real normb = norm(M.solve(b));
-  Vector r = M.solve(b - A * x);
   Real beta = norm(r);
   
   if (normb == 0.0)
@@ -122,7 +123,7 @@ GMRES(const Operator &A, Vector &x, const Vector &b,
       ApplyPlaneRotation(H(i,i), H(i+1,i), cs(i), sn(i));
       ApplyPlaneRotation(s(i), s(i+1), cs(i), sn(i));
       
-      if ((resid = abs(s(i+1)) / normb) < tol) {
+      if ((resid = template_abs(s(i+1)) / normb) < tol) {
         Update(x, i, H, s, v);
         tol = resid;
         max_iter = j;

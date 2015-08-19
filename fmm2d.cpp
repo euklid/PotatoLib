@@ -14,16 +14,24 @@ FMM2D::FMM2D(std::vector<Element*> const & src_elements,
              std::vector<Element*> const & tgt_elements,
              unsigned int exp_terms,
              unsigned int loc_terms,
-             unsigned int max_cell_elements) :
-	FMM(src_elements, tgt_elements, exp_terms, loc_terms, max_cell_elements)
+             unsigned int max_cell_elements,
+             bool src_eq_tgt) :
+	FMM(src_elements, 
+         tgt_elements, 
+         exp_terms, 
+         loc_terms, 
+         max_cell_elements, 
+         src_eq_tgt)
 {
 }
 
-void FMM2D::calculate()
+void FMM2D::calculate(bool precond)
 {
+    m_make_prec = precond;
     build_tree();
     upward_pass();
     downward_pass();
+    m_make_prec = false;
 }
 
 void FMM2D::recalculate()
@@ -31,6 +39,7 @@ void FMM2D::recalculate()
     if (!m_tree) {
         build_tree();
     }
+    //FIXME: recalculate causes moments, etc. to be reset.
     upward_pass();
     downward_pass();
 }
@@ -93,7 +102,7 @@ void FMM2D::upward_pass()
 }
 
 template<class T>
-void add_moments_cmp(std::vector<T> const & summand, std::vector<T> & moments)
+void add_moments(std::vector<T> const & summand, std::vector<T> & moments)
 {
     assert(summand.size() == moments.size());
     unsigned int num_moments = moments.size();
@@ -114,7 +123,7 @@ void FMM2D::m2l_downward_pass(Cell* cur_cell)
                           interaction_list[i]->get_center(),
                           shifted_moments,
                           cur_cell->get_center());
-        add_moments_cmp(shifted_moments,local_exps);
+        add_moments(shifted_moments,local_exps);
     }
     cur_cell->set_local_exps_cmp(local_exps);
 }
@@ -125,8 +134,11 @@ void FMM2D::l2l_downward_pass(Cell *cell)
     std::vector<complex_t> shifted_local_exp(m_loc_terms,0);
     Cell* father = cell->get_father();
     std::vector<complex_t> const & father_local_exp = father->get_local_exps_cmp();
-    m_kernel->L2L_cmp(father_local_exp,father->get_center(),shifted_local_exp,cell->get_center());
-    add_moments_cmp(shifted_local_exp,local_exp);
+    m_kernel->L2L_cmp(father_local_exp,
+                      father->get_center(),
+                      shifted_local_exp,
+                      cell->get_center());
+    add_moments(shifted_local_exp,local_exp);
     cell->set_local_exps_cmp(local_exp);
 }
 
@@ -143,25 +155,53 @@ void FMM2D::direct_downward_pass(Cell *target)
     std::vector<Element*> const & target_elements = target->get_target_elements();
     std::vector<Element*> source_elements;
 
+    unsigned int in_leaf_start = 0;
     //aggregate all source elements
     for(unsigned int i = 0; i<num_dir_neighbours; i++)
     {
+        if (direct_neighbours[i] == target)
+        {
+            in_leaf_start = source_elements.size();
+        }
         source_elements.insert(source_elements.end(),
                                direct_neighbours[i]->get_source_elements().begin(),
                                direct_neighbours[i]->get_source_elements().end());
     }
     unsigned int num_tgt_el = target_elements.size();
     unsigned int num_src_el = source_elements.size();
+    arma::mat prec_block(num_tgt_el,num_tgt_el);
+    bool make_prec = m_make_prec && target->is_leaf();
     for(unsigned int i = 0; i < num_tgt_el; i++)
     {
         double contrib = 0;
+        double coeff;
         Element * t = target_elements[i];
         for(unsigned int j = 0; j < num_src_el; j++)
         {
             Element * s = source_elements[j];
-            contrib += m_kernel->direct(*t,*s);
+            coeff = m_kernel->direct(*t,*s);
+            if (make_prec)
+            {
+                // IMPORTANT:
+                // we know that the order within the preconditioner is the order
+                // of the elements within the leaf. 
+                if(j>= in_leaf_start && j<in_leaf_start + num_tgt_el)
+                {
+                    prec_block(i,j-in_leaf_start) = coeff;
+                }
+            }
+            contrib += -s->get_value()*coeff;
         }
         t->set_target_value(t->get_target_value()+contrib);
+    }
+    if(make_prec)
+    {
+        // set block matrix in preconditioner
+        int submatrix_pos = target->get_leaf_block_start_pos();
+        m_precond.submat(submatrix_pos,
+                         submatrix_pos,
+                         submatrix_pos+num_tgt_el-1,
+                         submatrix_pos+num_tgt_el-1) = prec_block;
     }
 }
 
@@ -184,6 +224,14 @@ void FMM2D::downward_pass()
     // level 2 only M2L and direct, no L2L
     Cell* cur_cell;
 
+    if(m_make_prec)
+    {
+        if(!m_precond.size())
+        {
+            m_precond.set_size(m_src_elements.size(),m_src_elements.size());
+        }
+    }
+    
     while(it->has_next())
     {
         cur_cell = it->next();

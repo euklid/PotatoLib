@@ -24,7 +24,7 @@ public:
     virtual ~Tree();
     virtual Tree_Iterator* upward_iterator() = 0;
     virtual Tree_Iterator* downward_iterator() = 0;
-
+    
 protected:
     virtual Tree_Iterator* bfs_iterator() = 0;
     unsigned int m_dim;

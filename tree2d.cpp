@@ -46,6 +46,7 @@ void Tree2D::generate_cells(int max_elements)
     std::queue<Cell*> undivided_cells;
     undivided_cells.push(m_root);
     m_root->set_level(0);
+    int leaf_elements = 0;
     
     m_max_level = 0;
     m_lvl_ids.push_back(std::vector<unsigned int>());
@@ -70,7 +71,7 @@ void Tree2D::generate_cells(int max_elements)
         assert(cur_cell->get_id() == m_cells.size()-1);
         index++;
         
-		if(cur_cell->number_of_elements() > max_elements)
+	if(cur_cell->number_of_elements() > max_elements)
         {
             std::vector<Cell*> & new_cells = cur_cell->divide();
             for (int i = 0; i<new_cells.size(); i++)
@@ -81,6 +82,8 @@ void Tree2D::generate_cells(int max_elements)
         }
         else
         {
+            cur_cell->set_leaf_block_start_pos(leaf_elements);
+            leaf_elements += cur_cell->get_source_elements().size();
             m_leaves.push_back(cur_cell);
         }
     }
