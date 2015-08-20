@@ -65,6 +65,9 @@ public:
      * @return 
      */
     virtual int get_leaf_block_start_pos() const;
+    
+    virtual int get_leaf_number() const;
+    virtual void set_leaf_number(int leaf_number);
     virtual ~Cell();
 
 protected:
@@ -87,6 +90,7 @@ protected:
     double m_size;
     unsigned int m_level;
     int m_leaf_block_start_pos;
+    int m_leaf_number;
 };
 
 #endif

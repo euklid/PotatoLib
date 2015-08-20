@@ -39,7 +39,7 @@ void FMM2D::recalculate()
     if (!m_tree) {
         build_tree();
     }
-    //FIXME: recalculate causes moments, etc. to be reset.
+    //recalculate causes moments, etc. to be reset.
     upward_pass();
     downward_pass();
 }
@@ -198,10 +198,8 @@ void FMM2D::direct_downward_pass(Cell *target)
     {
         // set block matrix in preconditioner
         int submatrix_pos = target->get_leaf_block_start_pos();
-        m_precond.submat(submatrix_pos,
-                         submatrix_pos,
-                         submatrix_pos+num_tgt_el-1,
-                         submatrix_pos+num_tgt_el-1) = prec_block;
+        
+        m_precond[target->get_leaf_number()] = prec_block;
     }
 }
 
@@ -227,8 +225,16 @@ void FMM2D::downward_pass()
     if(m_make_prec)
     {
         if(!m_precond.size())
-        {
-            m_precond.set_size(m_src_elements.size(),m_src_elements.size());
+        { 
+            //blocks within block matrix are ordered in order of leaf array
+            std::vector<Cell*> const & leaves = m_tree->get_leaves();
+            unsigned int num_leaves = leaves.size();
+            m_precond.resize(num_leaves);
+            m_prec_block_starts.resize(num_leaves,0);
+            for(int i = 0; i<num_leaves; i++)
+            {
+                m_prec_block_starts[i] = leaves[i]->get_leaf_block_start_pos();
+            }
         }
     }
     

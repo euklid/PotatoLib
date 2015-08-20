@@ -6,7 +6,8 @@ Cell::Cell(unsigned int dimension, double size, Point const & center) :
     m_has_moment(false),
     m_has_grid_pos(false),
     m_size(size),
-    m_leaf_block_start_pos(-1)
+    m_leaf_block_start_pos(-1),
+    m_leaf_number(-1)
 {
     assert(m_size > 0);
     m_grid_pos = Point(dimension);
@@ -275,3 +276,13 @@ int Cell::get_leaf_block_start_pos() const
 {
     return m_leaf_block_start_pos;
 }
+
+ int Cell::get_leaf_number() const
+ {
+     return m_leaf_number;
+ }
+ 
+ void Cell::set_leaf_number(int leaf_number)
+ {
+     m_leaf_number = leaf_number;
+ }

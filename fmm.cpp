@@ -28,7 +28,7 @@ FMM::FMM(std::vector<Element*> const & src_elements,
     } else {
         // source, that is target, is counted twice --> double criterion for 
         // subdivision of cell
-        m_max_cell_elements =max_cell_elements < 1;
+        m_max_cell_elements =max_cell_elements << 1;
     }
     
     m_elements.insert(m_elements.begin(), m_src_elements.begin(), m_src_elements.end());
@@ -52,19 +52,15 @@ void FMM::set_kernel(Kernel const & kernel)
     m_kernel = &kernel;
 }
 
-arma::sp_mat const & FMM::get_precond() const
+const std::vector<arma::mat> &FMM::get_precond() const
 {
-    if(m_make_prec)
-    {
-        if (m_precond.size() != 0)
-        {
-            assert(m_precond.n_cols == m_src_elements.size());
-            return m_precond;
-        }
-    }
-    
-    std::cerr << "no preconditioner has been computed!" << std::endl;
-    return m_precond;
+   if(!m_precond.size())
+   {
+       std::cerr << "No preconditioner has been computed" << std::endl;
+       return m_precond;
+   }
+   assert(m_precond.size() == m_tree->get_leaves().size());
+   return m_precond;
 }
 
 std::vector<Element*> const & FMM::get_permuted_elements()
@@ -103,4 +99,9 @@ const std::vector<unsigned int>& FMM::get_element_permutation()
     
     get_permuted_elements();
     return m_permutation;
+}
+
+const std::vector<unsigned int> & FMM::get_prec_block_starts() const
+{
+    return m_prec_block_starts;
 }

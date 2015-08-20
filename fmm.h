@@ -34,13 +34,14 @@ public:
     virtual std::vector<Element*> const & get_tgt_elements() const;
     
     /**
-     * If preconditioner should've been calculated, return it. 
+     * If preconditioner should've been calculated, return it as array of
+     * block matrices it consists of 
      * It is suggested to use the get_permuted_elements() to find out how
      * the entries in the preconditioner relate to the original order of 
      * elements
      * @return preconditioner sparse matrix for preconditioning GMRES
      */
-    virtual arma::sp_mat const & get_precond() const;
+    virtual std::vector<arma::mat> const & get_precond() const;
     /**
      *  using the already constructed tree and given elements (that may have
      *  different source values) reevaluate the target values
@@ -63,6 +64,8 @@ public:
      * @return permutation of elements
      */
     virtual std::vector<unsigned int> const & get_element_permutation();
+    
+    virtual std::vector<unsigned int> const & get_prec_block_starts() const;
 
 protected:
     virtual void build_tree() = 0;
@@ -81,7 +84,8 @@ protected:
     unsigned int m_loc_terms;
     unsigned int m_max_cell_elements;
     bool m_make_prec;
-    arma::sp_mat m_precond;
+    std::vector<arma::mat> m_precond;
+    std::vector<unsigned int> m_prec_block_starts;
 };
 
 #endif

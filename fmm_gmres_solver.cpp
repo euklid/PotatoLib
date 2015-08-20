@@ -49,29 +49,11 @@ private:
     bool m_has_precond;
 };
 
-class ArmaMatWrapper : public arma::mat
-{
-public:
-    ArmaMatWrapper(arma::mat & mat)
-    : arma::mat(mat)
-    {}
-    
-    ArmaMatWrapper(int rows, int cols)
-    : arma::mat(rows,cols)
-    {}
-    
-    arma::vec solve(arma::vec const & vec) const
-    {
-        arma::vec sol = arma::solve(static_cast<arma::mat>(*this), vec);
-        return sol;
-    }
-};
-
-class Precond : public arma::sp_mat
+class Precond
 {
 public:
     Precond(FMM & fmm)
-    : arma::sp_mat(), m_fmm(fmm),m_has_prec_data(false)
+    : m_fmm(fmm),m_has_prec_data(false)
     {}
     
     /**
@@ -89,8 +71,9 @@ public:
     {
         if(!m_has_prec_data)
         {
-            (dynamic_cast<arma::sp_mat*>(this))->operator =(m_fmm.get_precond());
+            m_prec = &m_fmm.get_precond();
             m_has_prec_data = true;
+            block_LUP();
         }
         std::vector<unsigned int> const & permutation = m_fmm.get_element_permutation();
         assert(permutation.size() == vec.size());
@@ -100,8 +83,9 @@ public:
         {
             perm_vec(i) = vec(permutation[i]); // i-th entry is permutation(i)-th element
         }
-        arma::vec perm_sol = arma::spsolve(static_cast<arma::sp_mat>(*this), vec);
-        arma::vec sol(perm_sol);
+        arma::vec perm_sol;
+        LUP_solve(perm_vec, perm_sol);// = arma::spsolve(static_cast<arma::sp_mat>(*this), vec);
+        arma::vec sol;
         
         //bring solution in correct order
         for(unsigned int i = 0; i<perm_size; i++)
@@ -110,10 +94,70 @@ public:
         }
         return sol;
     }
+    
+private:
+    void block_LUP()
+    {
+        unsigned int num_blocks = m_prec->size();
+        m_L.reserve(num_blocks);
+        m_U.reserve(num_blocks);
+        m_P.resize(num_blocks,0);
+        for(unsigned int i = 0; i<num_blocks; i++)
+        {
+            arma::mat L,U,P;
+            arma::lu(m_L[i],m_U[i],P,m_prec->at(i));
+            unsigned int block_size = P.n_cols;
+            arma::uvec perm(block_size);
+            for(unsigned int j = 0; j < block_size; j++)
+            {
+                perm(j) = j;
+            }
+            m_P[i] = arma::conv_to<arma::uvec >::from(P*perm);
+        }
+    }
+    
+    void LUP_solve(arma::vec const & vec, arma::vec & sol)
+    {
+        std::vector<unsigned int> const & block_starts = m_fmm.get_prec_block_starts();
+        unsigned int num_blocks = block_starts.size();
+        for(int i = 0; i<num_blocks; i++)
+        {
+            // Ax=b <==> LUx = Pb <==> Ly = Pb and y = Ux
+            // therefore first solve for y and then solve for x, knowing L and U
+            // are triangular matrices and armadillo can use this to accelerate
+            // the solution
+            
+            unsigned int block_size = m_prec->at(i).size();
+            arma::vec block_vec(block_size);
+            unsigned int block_start = block_starts[i];
+            assert(m_P[i].size() == block_size);
+            
+            //initialize Pb
+            for(unsigned int j = 0; j<block_size; j++)
+            {
+                block_vec(j) = vec(block_start+m_P[i](j));
+            }
+            // solve for y and x and assign to solution
+            arma::vec y,x;
+            arma::auxlib::solve_tr(y,m_L[i],block_vec,1); //0: upper, 1:lower
+            arma::auxlib::solve_tr(x,m_U[i],y,0);
+            sol.subvec(block_start,block_start+block_size-1) = x;
+        }
+    }
+    
 private:
     FMM & m_fmm;
+    std::vector<arma::mat> const * m_prec;
     bool m_has_prec_data;
+    
+    // block matrices composed of L resp. U matrices
+    std::vector<arma::mat > m_L,m_U; 
+    
+    //permutations for each block for LU decomp.
+    std::vector<arma::uvec > m_P; 
 };
+
+
 
 //FIXME: how to switch fast between target/source values of elements and boundary conditions/goals.
 // 1. idea: use a backing array for elements and override get_value() functions to access these
@@ -141,13 +185,13 @@ void FMM_GMRES_Solver::solve(int max_iterations, int m, double &tolerance)
     arma::vec b(m_boundary_goals);
     //arma::mat _H(m,m);
     //arma::sp_mat _M;
-    ArmaMatWrapper H(m,m);
+    arma::mat H(m,m);
     Precond M(m_fmm);
     
     GMRES<Operator,
           arma::vec,
           Precond,
-          ArmaMatWrapper,
+          arma::mat,
           double>(A, x, b, M, H, m, max_iterations, tolerance);
     
     //output result

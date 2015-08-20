@@ -83,6 +83,7 @@ void Tree2D::generate_cells(int max_elements)
         else
         {
             cur_cell->set_leaf_block_start_pos(leaf_elements);
+            cur_cell->set_leaf_number(m_leaves.size());
             leaf_elements += cur_cell->get_source_elements().size();
             m_leaves.push_back(cur_cell);
         }
