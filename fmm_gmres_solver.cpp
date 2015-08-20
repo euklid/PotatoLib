@@ -84,7 +84,7 @@ public:
             perm_vec(i) = vec(permutation[i]); // i-th entry is permutation(i)-th element
         }
         arma::vec perm_sol;
-        LUP_solve(perm_vec, perm_sol);// = arma::spsolve(static_cast<arma::sp_mat>(*this), vec);
+        LUP_solve(perm_vec, perm_sol);
         arma::vec sol;
         
         //bring solution in correct order
@@ -157,34 +157,21 @@ private:
     std::vector<arma::uvec > m_P; 
 };
 
-
-
-//FIXME: how to switch fast between target/source values of elements and boundary conditions/goals.
-// 1. idea: use a backing array for elements and override get_value() functions to access these
-//          the backing array then would be used to solve the equations with armadillo
-// 2. idea: be naive and copy
-// 3. idea: use the arma types for internal vectors, what internal vectors?
-//          * only used vector as C-array replacement, even have own Point class
-//            + combine ideas 1 and 3 and use armadillo vectors as internal storage for values
-//            + FMM still needs to produce a preconditioner
-
- 
-
 FMM_GMRES_Solver::FMM_GMRES_Solver(FMM & fmm,
                                    std::vector<double> & boundary_goals,
+                                   std::vector<double> & init_guess,
                                    std::vector<double> & solution) :
     m_fmm(fmm),
     m_boundary_goals(boundary_goals),
+    m_init_guess(init_guess),
     m_solution(solution)
 {}
 
 void FMM_GMRES_Solver::solve(int max_iterations, int m, double &tolerance)
 {
     Operator A(m_fmm);
-    arma::vec x=arma::ones(m_solution.size());
+    arma::vec x=arma::conv_to<arma::vec>::from(m_init_guess);
     arma::vec b(m_boundary_goals);
-    //arma::mat _H(m,m);
-    //arma::sp_mat _M;
     arma::mat H(m,m);
     Precond M(m_fmm);
     
