@@ -99,6 +99,7 @@ void FMM2D::upward_pass()
             cur_cell->set_moments_cmp(moments);
         }
     }
+    delete it;
 }
 
 template<class T>
@@ -115,6 +116,10 @@ void add_moments(std::vector<T> const & summand, std::vector<T> & moments)
 void FMM2D::m2l_downward_pass(Cell* cur_cell)
 {
     std::vector<complex_t> shifted_moments, local_exps = cur_cell->get_local_exps_cmp();
+    if(!local_exps.size())
+    {
+        local_exps.resize(m_loc_terms,0);
+    }
     std::vector<Cell*> const & interaction_list = cur_cell->get_interaction_list();
     unsigned int num_interaction_list = interaction_list.size();
     for(unsigned int i = 0; i<num_interaction_list; i++)
@@ -125,12 +130,23 @@ void FMM2D::m2l_downward_pass(Cell* cur_cell)
                           cur_cell->get_center());
         add_moments(shifted_moments,local_exps);
     }
+    /*printf("M2L for cell: %d at level %d with posx %f and posy %f\n",
+           cur_cell->get_id(), 
+           cur_cell->get_level(),
+           cur_cell->get_level_grid_position()[0], 
+           cur_cell->get_level_grid_position()[1]);
+    fflush(stdin);
+    */
     cur_cell->set_local_exps_cmp(local_exps);
 }
 
 void FMM2D::l2l_downward_pass(Cell *cell)
 {
     std::vector<complex_t> local_exp = cell->get_local_exps_cmp();
+    if(local_exp.empty())
+    {
+        local_exp.resize(m_loc_terms,0);
+    }
     std::vector<complex_t> shifted_local_exp(m_loc_terms,0);
     Cell* father = cell->get_father();
     std::vector<complex_t> const & father_local_exp = father->get_local_exps_cmp();
@@ -258,7 +274,7 @@ void FMM2D::downward_pass()
 
         if(cur_cell->is_leaf())
         {
-            l2l_downward_pass(cur_cell);
+            evaluate_far_interactions(cur_cell);
         }
         if(it->has_next())
         {
