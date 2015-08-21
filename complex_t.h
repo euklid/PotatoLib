@@ -23,7 +23,7 @@ struct complex_t
     complex_t& operator=(const complex_t & a)
     {
         real=a.real;
-        img=a.real;
+        img=a.img;
         return *this;
     }
 
@@ -35,7 +35,7 @@ struct complex_t
     complex_t& operator+=(const complex_t & a)
     {
         real+=a.real;
-        img+=a.real;
+        img+=a.img;
         return *this;
     }
 
@@ -74,7 +74,7 @@ struct complex_t
         return complex_t(real*a.real-img*a.img, a.img*real + a.real*img);
     }
 
-    complex_t & operator*=(const double & a)
+    complex_t & operator*=(const double a)
     {
         real*=a;
         img*=a;
@@ -135,14 +135,14 @@ struct complex_t
     
     complex_t & operator-()
     {
-        img*=-1;
-        real*=-1;
+        img = -img;
+        real = -real;
         return *this;
     }
     
     double arg() const
     {
-        assert(img != 0 && real !=0);
+        assert(img != 0 || real !=0);
         return atan2(img, real);
     }
     
