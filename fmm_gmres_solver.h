@@ -23,9 +23,7 @@ public:
      *  @param m using GMRES(m) with restart after m iterations
      *  @param tolerance for convergence, after execution the norm of 
      *  residual
-     *  @return the approximate solution
      */
-
     void solve(int max_iterations, int m, double & tolerance);
     
 private:

@@ -14,18 +14,19 @@ FMM::FMM(std::vector<Element*> const & src_elements,
     m_max_cell_elements(max_cell_elements),
     m_make_prec(false)
 {
-    // we assume that source and target elements have ascending order by id
+    // we assume that source elements have ascending order by id
     for(int i = 0; i<src_elements.size(); i++)
     {
         assert(src_elements[i]->get_id() == i);
     }
-    if(!src_eq_tgt)
+    
+    if(src_eq_tgt)
     {
+        // and if source are targets that they have the same ordering
         for(int i = 0; i<tgt_elements.size(); i++)
         {
             assert(tgt_elements[i]->get_id() == i);
         }
-    } else {
         // source, that is target, is counted twice --> double criterion for 
         // subdivision of cell
         m_max_cell_elements =max_cell_elements << 1;

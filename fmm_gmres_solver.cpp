@@ -9,7 +9,7 @@ public:
     m_fmm(fmm), m_has_precond(false)
     {}
     
-    arma::vec operator*(arma::vec vec)
+    arma::vec operator*(arma::vec const & vec)
     {
         assert(vec.size() == m_fmm.get_src_elements().size());
         std::vector<Element*> const & source_el = m_fmm.get_src_elements();
@@ -169,6 +169,7 @@ FMM_GMRES_Solver::FMM_GMRES_Solver(FMM & fmm,
 
 void FMM_GMRES_Solver::solve(int max_iterations, int m, double &tolerance)
 {
+    assert(m_fmm.get_src_elements().size() == m_fmm.get_tgt_elements().size());
     Operator A(m_fmm);
     arma::vec x=arma::conv_to<arma::vec>::from(m_init_guess);
     arma::vec b(m_boundary_goals);

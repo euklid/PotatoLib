@@ -24,9 +24,9 @@ public:
         return m_value;
     }
     
-    virtual element_type get_type() const
+    virtual int get_type() const
     {
-        return (element_type)m_type;
+        return m_type;
     }
 
     virtual const Point & get_position() const = 0;

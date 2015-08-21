@@ -8,6 +8,13 @@ Point::Point(unsigned int dimension) :
 {
     m_coord = std::vector<double>(m_dim,0);
 }
+
+Point::Point(const Point& p)
+{
+    m_dim = p.m_dim;
+    m_coord = p.m_coord;
+}
+
 double Point::dist(Point const & p1, Point const & p2)
 {
     assert(p1.get_dimension() == p2.get_dimension());
@@ -43,14 +50,14 @@ double Point::max_norm_dist(const Point &p1, const Point & p2)
 const double & Point::operator[](unsigned int coord) const
 {
     assert(coord < m_dim);
-    assert(m_coord.size() < coord);
+    assert(m_coord.size() > coord);
     return m_coord[coord];
 }
 
 double & Point::operator[](unsigned int coord)
 {
     assert(coord < m_dim);
-    assert(m_coord.size() < coord);
+    assert(m_coord.size() > coord);
     return m_coord[coord];
 }
 

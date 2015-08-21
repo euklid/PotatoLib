@@ -53,18 +53,18 @@ std::vector<Cell*> & Cell2D::divide()
     for(int j = 0; j<num_src_elements; j++)
     {
         cell_bucket = 0;
-        for(int i = 0; i<m_dim; i++)
+        for(int dim = 0; dim<m_dim; dim++)
         {
-            cell_bucket+= (m_src_elements[j]->get_position()[j] > m_center[j]) << i;
+            cell_bucket+= (m_src_elements[j]->get_position()[dim] > m_center[dim]) << dim;
         }
         new_cells_src_elements[cell_bucket].push_back(m_src_elements[j]);
     }
     for(int j = 0; j<num_tgt_elements; j++)
     {
         cell_bucket = 0;
-        for(int i = 0; i<m_dim; i++)
+        for(int dim = 0; dim<m_dim; dim++)
         {
-            cell_bucket+=(m_target_elements[j]->get_position()[j] > m_center[j]) << i;
+            cell_bucket+=(m_target_elements[j]->get_position()[dim] > m_center[dim]) << dim;
         }
         new_cells_tgt_elements[cell_bucket].push_back(m_target_elements[j]);
     }

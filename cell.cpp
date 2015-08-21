@@ -245,6 +245,7 @@ void Cell::set_level_grid_position(const Point &grid_pos)
 {
     assert(grid_pos.get_dimension() == m_dim);
     m_grid_pos = grid_pos;
+    m_has_grid_pos = true;
 }
 
 const std::vector<double> & Cell::get_local_exps() const

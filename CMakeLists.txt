@@ -2,10 +2,13 @@ project(PotatoLib)
 cmake_minimum_required(VERSION 2.8)
 
 set(USE_SUPERLU 1)
+set(CMAKE_BUILD_TYPE Debug)
 
 if(${USE_SUPERLU})
     set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DARMA_USE_SUPERLU" )
 endif(${USE_SUPERLU})
+
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 
 include_directories(/usr/local/include/)
 

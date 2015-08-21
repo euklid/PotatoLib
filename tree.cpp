@@ -43,10 +43,10 @@ Point Tree::get_cell_grid_pos(Point const & cell_center,
                        double root_cell_size)
 {
     assert(cell_center.get_dimension() == root_cell_center.get_dimension());
-    Point center_shift(root_cell_center.get_dimension());
+    Point center_shift(root_cell_center);
     
     for (int i = 0; i<center_shift.get_dimension(); i++) {
-        center_shift[i] = -root_cell_size/2;
+        center_shift[i] = root_cell_size/2 - root_cell_center[i];
     }
     
     Point shiftet_cell_center = cell_center + center_shift;

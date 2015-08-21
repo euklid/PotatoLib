@@ -105,6 +105,7 @@ Point lazy_get_set_cell_grid_pos(Cell* cell,
                                                 lvl,
                                                 root->get_center(),
                                                 root->get_size());
+        cell->set_level_grid_position(cell_grid_pos);
     }
     return cell_grid_pos;
 }
@@ -116,7 +117,7 @@ void Tree2D::generate_interaction_lists()
     {
         std::vector<unsigned int> & lvl_cells = m_lvl_ids[i];
         std::vector<unsigned int> & lvl_father_cells = m_lvl_ids[i-1];
-        std::vector<unsigned int >::iterator it = lvl_cells.begin();
+        std::vector<unsigned int >::const_iterator it = lvl_cells.begin();
         std::vector<unsigned int >::const_iterator other_it;
         for (; it!=lvl_cells.end(); ++it)
         {
@@ -133,18 +134,19 @@ void Tree2D::generate_interaction_lists()
                 Point other_cell_father_grid_pos = lazy_get_set_cell_grid_pos(other_cell_father,
                                                                               i-1,
                                                                               m_root);
-                if (Point::max_norm_dist(cur_cell_father_grid_pos, other_cell_father_grid_pos) != 1)
+                if (Point::max_norm_dist(cur_cell_father_grid_pos, other_cell_father_grid_pos) > 1)
                 {
                     continue;
                 }
-                //otherwise we have neighboring father cells and want to retrieve the other cell's
-                //children
+                //otherwise we have neighboring father cells (or the own father)
+                //and want to retrieve the other cell's children
+                
                 if (other_cell_father->is_leaf())
                 {
                     continue;
                 }
                 std::vector<Cell*> children = other_cell_father->get_children();
-                std::vector<Cell*>::iterator children_it = children.begin();
+                std::vector<Cell*>::const_iterator children_it = children.begin();
 
                 for(;children_it != children.end(); ++children_it)
                 {

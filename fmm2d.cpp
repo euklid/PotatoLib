@@ -306,6 +306,7 @@ std::pair<double, Point> get_bounding_cube(std::vector<Element*> const & element
     }
 
     double max_dist = 0;
+    center = max;
     for (int i = 0; i< min.get_dimension(); i++) 
     {
         double dist = max[i]-min[i];
