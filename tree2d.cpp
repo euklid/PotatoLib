@@ -69,6 +69,7 @@ void Tree2D::generate_cells(int max_elements)
         m_lvl_ids[cur_cell->get_level()].push_back(cur_cell->get_id());
         
         assert(cur_cell->get_id() == m_cells.size()-1);
+        assert(m_cells.size()-1 == index);
         index++;
         
 	if(cur_cell->number_of_elements() > max_elements)
@@ -174,7 +175,7 @@ Tree_Iterator *Tree2D::bfs_iterator()
 
 Tree_Iterator * Tree2D::upward_iterator()
 {
-    return new Tree2D_Upward_Iterator(this);
+    return new Tree2D_Upward_Code_Iterator(m_lvl_ids,m_cells);
 }
 
 Tree_Iterator * Tree2D::downward_iterator()
@@ -205,37 +206,45 @@ bool Tree2D_BFS_Iterator::has_next()
 {
     return !m_cell_queue.empty();
 }
+// the following commented code is stupid code
+// if you want to just use the father children links, make a stack of operations
+// so that for each M2M the child values have to be known and the 2 possibilities
+// are that the childs are leafs or their moments need to be computed by M2M, too
+// --> DFS through tree
+// "cropping" only the leaves doesn't give guarantee that father has all children
+// for M2M computation
 
-Tree2D_Upward_Iterator::Tree2D_Upward_Iterator(Tree2D* tree)
-{
-    m_last = NULL;
-    m_tree = tree;
-    const std::vector<Cell*> leaf_cells = tree->get_leaves();
-    for (int i = 0; i<leaf_cells.size(); i++)
-    {
-        m_leaf_queue.push(leaf_cells.at(i));
-    }
-    m_used_ids = std::vector<bool>(tree->get_cells().size(),false);
-}
+//Tree2D_Upward_Iterator::Tree2D_Upward_Iterator(Tree2D* tree)
+//{
+//    m_last = NULL;
+//    m_tree = tree;
+//    const std::vector<Cell*> leaf_cells = tree->get_leaves();
+//    for (int i = 0; i<leaf_cells.size(); i++)
+//    {
+//        m_leaf_queue.push(leaf_cells.at(i));
+//    }
+//    m_used_ids = std::vector<bool>(tree->get_cells().size(),false);
+//}
+//
+//Cell* Tree2D_Upward_Iterator::next()
+//{
+//    m_last = m_leaf_queue.front();
+//    m_leaf_queue.pop();
+//    m_used_ids[(m_last->get_id())] = true;
+//    if (!m_used_ids.at(m_last->get_father()->get_id())) {
+//        Cell * const father = m_last->get_father();
+//        if (father->get_level() >= 2) {
+//            m_leaf_queue.push(father);
+//        }
+//    }
+//    return m_last;
+//}
+//
+//bool Tree2D_Upward_Iterator::has_next()
+//{
+//    return !m_leaf_queue.empty();
+//}
 
-Cell* Tree2D_Upward_Iterator::next()
-{
-    m_last = m_leaf_queue.front();
-    m_leaf_queue.pop();
-    m_used_ids[(m_last->get_id())] = true;
-    if (!m_used_ids.at(m_last->get_father()->get_id())) {
-        Cell * const father = m_last->get_father();
-        if (father->get_level() >= 2) {
-            m_leaf_queue.push(father);
-        }
-    }
-    return m_last;
-}
-
-bool Tree2D_Upward_Iterator::has_next()
-{
-    return !m_leaf_queue.empty();
-}
 
 Tree2D_Upward_Code_Iterator::Tree2D_Upward_Code_Iterator(
         std::vector<std::vector<unsigned int> > const & lvl_ids,
