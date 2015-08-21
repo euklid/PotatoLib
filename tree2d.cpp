@@ -308,7 +308,6 @@ Cell *Tree2D_Downward_Code_Iterator::next()
         m_outer_idx++;
         m_inner_size = m_lvl_ids[m_outer_idx].size();
     }
-    ++m_inner_idx;
 #if DEBUG
     assert(m_cells.size() > m_lvl_ids[m_outer_idx][m_inner_idx]);
 #endif

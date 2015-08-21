@@ -64,6 +64,8 @@ void Laplace2DKernel::L2L_cmp(std::vector<complex_t> const & loc_in,
                               std::vector<complex_t> & loc_out,
                               complex_t const & loc_out_center) const
 {
+    assert(loc_in.size() > 0);
+    assert(loc_in.size() == loc_out.size());
     loc_out.resize(loc_in.size(),0);
     // compute (z_l' - z_l)^k/k! for all k from 0 to mom_in.size()-1 to reuse them
     std::vector<complex_t> factors(loc_in.size(),0);

@@ -3,7 +3,6 @@
 Cell::Cell(unsigned int dimension, double size, Point const & center) :
     m_dim(dimension),
     m_center(center),
-    m_has_moment(false),
     m_has_grid_pos(false),
     m_size(size),
     m_leaf_block_start_pos(-1),

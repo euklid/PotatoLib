@@ -90,6 +90,8 @@ int main(int argc, char** argv)
               loc_terms,
               max_cell_elements,
               src_eq_tgt);
+    Laplace2DKernel laplace;
+    fmm.set_kernel(laplace);
     
     fmm.calculate();
     for(std::vector<Element*>::const_iterator it = tgt_elements.begin(); 

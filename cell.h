@@ -85,7 +85,6 @@ protected:
     std::vector<complex_t> m_moments_cmp;
     std::vector<double> m_local_exps;
     std::vector<complex_t> m_local_exps_cmp;
-    bool m_has_moment;
     bool m_has_grid_pos;
     double m_size;
     unsigned int m_level;

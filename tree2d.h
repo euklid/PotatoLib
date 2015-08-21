@@ -66,10 +66,10 @@ public:
     virtual bool has_next();
 private:
     std::vector<std::vector<unsigned int> > const & m_lvl_ids;
-    unsigned int m_outer_size;
-    unsigned int m_outer_idx;
-    unsigned int m_inner_size;
-    unsigned int m_inner_idx;
+    long m_outer_size;
+    long int m_outer_idx;
+    long int m_inner_size;
+    long int m_inner_idx;
     std::vector<Cell*> const & m_cells;
 };
 
@@ -82,10 +82,10 @@ public:
     virtual bool has_next();
 private:
     std::vector<std::vector<unsigned int> > const & m_lvl_ids;
-    unsigned int m_outer_size;
-    unsigned int m_outer_idx;
-    unsigned int m_inner_size;
-    unsigned int m_inner_idx;
+    long int m_outer_size;
+    long int m_outer_idx;
+    long int m_inner_size;
+    long int m_inner_idx;
     std::vector<Cell*> const & m_cells;
 };
 
