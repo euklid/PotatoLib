@@ -1,5 +1,6 @@
 #include "point.h"
 #include <cmath>
+#include <iosfwd>
 
 Point::Point() {}
 
@@ -20,7 +21,7 @@ double Point::dist(Point const & p1, Point const & p2)
     assert(p1.get_dimension() == p2.get_dimension());
     unsigned int dim = p1.get_dimension();
     double res = 0;
-    int summand = 0;
+    double summand = 0;
     for(unsigned int i = 0; i< dim; i++)
     {
         summand = (p1[i]-p2[i]);
@@ -38,7 +39,8 @@ double Point::max_norm_dist(const Point &p1, const Point & p2)
     double diff = 0;
     for (unsigned int i = 0; i< dim; i++)
     {
-        diff = std::abs(p1[i]-p2[i]);
+        diff = p1[i]-p2[i];
+        diff = (diff>0)?diff:-diff;
         if (diff  > max)
         {
             max = diff;
@@ -99,4 +101,14 @@ bool Point::operator==(const Point &p) const
 unsigned int Point::get_dimension() const
 {
     return m_dim;
+}
+
+std::ostream &operator<<( std::ostream &output, const Point &p )
+{
+    output << p.m_coord[0];
+    for(int i = 1; i<p.m_dim; i++)
+    {
+        output << " " << p.m_coord[i];
+    }
+    return output;
 }

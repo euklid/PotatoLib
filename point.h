@@ -3,6 +3,7 @@
 #include <vector>
 #include <assert.h>
 #include <math.h>
+#include <ostream>
 
 class Point
 {
@@ -20,6 +21,7 @@ public:
     Point operator-(Point const & p1) const;
     Point operator+(Point const & p1) const;
     bool operator==(Point const & p) const;
+    friend std::ostream &operator<<( std::ostream &output, const Point &p );
 
 private:
     std::vector<double> m_coord;

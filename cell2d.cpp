@@ -138,9 +138,11 @@ bool Cell2D::contains_point(Point const &pt) const
     }
     
     Point diff = m_center - pt;
-    int half_size = m_size/2;
+    double half_size = m_size/2;
     for (int i = 0; i<m_dim; i++)
     {
+        double abs_diff = diff[i];
+        abs_diff = (abs_diff>0)?abs_diff:-abs_diff;
         if (std::abs(diff[i]) >  half_size)
         {
             return false;

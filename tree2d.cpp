@@ -164,6 +164,23 @@ void Tree2D::generate_interaction_lists()
                     }
                 }
             }
+#ifdef DEBUG
+            std::cout << "Cell " << cur_cell->get_id() << " at level "<< cur_cell->get_level() <<" at " << cur_cell->get_level_grid_position() << " interaction list is" << std::endl;
+            std::vector<unsigned int> interaction_list = cur_cell->get_interaction_list_ids();
+            for(unsigned int i = 0; i< interaction_list.size(); i++)
+            {
+                std::cout << interaction_list[i] << " ";
+            }
+            std::cout << std::endl;
+            std::cout << "Cell " << cur_cell->get_id() << " direct list is" << std::endl;
+            std::vector<unsigned int> direct_list = cur_cell->get_direct_list_ids();
+            for(unsigned int i = 0; i< direct_list.size(); i++)
+            {
+                std::cout << direct_list[i] << " ";
+            }
+            std::cout << "\n" << std::endl;
+#endif
+            
         }
     }
 }
