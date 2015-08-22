@@ -7,6 +7,9 @@
 
 #include "cell2d.h"
 #include <cmath>
+#ifdef DEBUG
+#include <iostream>
+#endif
 
 
 Cell2D::Cell2D( double size, Point const & center)
@@ -77,6 +80,18 @@ std::vector<Cell*> & Cell2D::divide()
         {
             m_children.push_back(new_cells[i]);
         }
+#ifdef DEBUG
+        unsigned int num_new_cell_tgt_el = new_cells_tgt_elements[i].size();
+        unsigned int num_new_cell_src_el = new_cells_src_elements[i].size();
+        for(unsigned int el = 0 ; el< num_new_cell_src_el; el++)
+        {
+            assert(new_cells[i]->contains_point(new_cells_src_elements[i][el]->get_position()));
+        }
+        for(unsigned int el = 0; el < num_new_cell_tgt_el; el ++)
+        {
+            assert(new_cells[i]->contains_point(new_cells_tgt_elements[i][el]->get_position()));
+        }
+#endif
     }
     return m_children;
     /*for (int i = 1; i>-2; i=i-2)
@@ -143,7 +158,7 @@ bool Cell2D::contains_point(Point const &pt) const
     {
         double abs_diff = diff[i];
         abs_diff = (abs_diff>0)?abs_diff:-abs_diff;
-        if (std::abs(diff[i]) >  half_size)
+        if (abs_diff >  half_size)
         {
             return false;
         }

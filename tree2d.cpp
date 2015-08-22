@@ -72,7 +72,7 @@ void Tree2D::generate_cells(int max_elements)
         assert(m_cells.size()-1 == index);
         index++;
         
-	if(cur_cell->number_of_elements() > max_elements)
+	if(cur_cell->number_of_elements() > max_elements || cur_cell->get_level()<2)
         {
             std::vector<Cell*> & new_cells = cur_cell->divide();
             for (int i = 0; i<new_cells.size(); i++)

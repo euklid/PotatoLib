@@ -42,4 +42,4 @@ set(HEADERS
             fmm_gmres_solver.h
 )
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
-target_link_libraries(${PROJECT_NAME} armadillo superlu)
+target_link_libraries(${PROJECT_NAME} armadillo superlu m)

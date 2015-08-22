@@ -1,4 +1,7 @@
 #include "kernel_laplace_point_2d.h"
+#ifdef DEBUG
+#include <iostream>
+#endif
 
 double Laplace2DKernel::direct(Element const & target, Element const & src) const
 {
@@ -41,6 +44,9 @@ std::vector<complex_t> Laplace2DKernel::calc_moments_cmp(const std::vector<Eleme
         for(int j = 0; j<num_moments; j++)
         {
             moments[j]+= contrib;
+#ifdef DEBUG
+            std::cout << "calc_moments_cmp: moment contrib "<<j<<" " << contrib.real << " " << contrib.img << std::endl;
+#endif
             contrib*=fac/(j+1);
         }
     }
@@ -146,7 +152,6 @@ void Laplace2DKernel::M2L_cmp(std::vector<complex_t> const & moments,
                               std::vector<complex_t> & loc_exp,
                               complex_t const & loc_center) const
 {
-    loc_exp.resize(moments.size(),0);
     // compute (k-1)!/(z_l-z_c)^k for k>0 and -log(z_l-z_c) for k = 0 for reuse
     assert(mom_center != loc_center);
 
@@ -159,7 +164,7 @@ void Laplace2DKernel::M2L_cmp(std::vector<complex_t> const & moments,
         factors[i] = (factors[i-1]*(i-1))/diff;
     }
 
-    int sign = 1;
+    double sign = 1;
     for(int i = 0; i<loc_exp.size(); i++)
     {
         for(int j = 0; j<moments.size(); j++)

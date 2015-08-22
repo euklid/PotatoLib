@@ -118,7 +118,7 @@ void add_moments(std::vector<T> const & summand, std::vector<T> & moments)
 
 void FMM2D::m2l_downward_pass(Cell* cur_cell)
 {
-    std::vector<complex_t> shifted_moments, local_exps = cur_cell->get_local_exps_cmp();
+    std::vector<complex_t> local_exps = cur_cell->get_local_exps_cmp();
     if(!local_exps.size())
     {
         local_exps.resize(m_loc_terms,0);
@@ -127,6 +127,7 @@ void FMM2D::m2l_downward_pass(Cell* cur_cell)
     unsigned int num_interaction_list = interaction_list.size();
     for(unsigned int i = 0; i<num_interaction_list; i++)
     {
+        std::vector<complex_t> shifted_moments(m_loc_terms,0);
         m_kernel->M2L_cmp(interaction_list[i]->get_moments_cmp(),
                           interaction_list[i]->get_center(),
                           shifted_moments,
@@ -240,7 +241,7 @@ void FMM2D::downward_pass()
     Tree_Iterator* it = m_tree->downward_iterator();
     // level 2 only M2L and direct, no L2L
     Cell* cur_cell;
-
+    
     if(m_make_prec)
     {
         if(!m_precond.size())
@@ -261,14 +262,49 @@ void FMM2D::downward_pass()
     {
         cur_cell = it->next();
         if(cur_cell->get_level() > 2) break;
+        if(cur_cell->get_target_elements().empty())
+        {
+            continue;
+        }
+#ifdef DEBUG
+    std::cout << "Downward pass: " << cur_cell->debug_info() << std::endl;
+#endif
+        
         //M2L
         m2l_downward_pass(cur_cell);
         direct_downward_pass(cur_cell);
+        // leaf at lvl 2
+        if(cur_cell->is_leaf())
+        {
+            evaluate_far_interactions(cur_cell);
+        }
     }
 
+    // there are no level 3 cells
+    if(cur_cell->get_level() < 3) 
+    {
+        return;
+    }
+    
     //reached lvl 3 or higher --> use L2L and M2L
     while(1)
     {
+        if(cur_cell->get_target_elements().empty())
+        {
+            // skip this and go to next if available
+            if(it->has_next())
+            {
+                cur_cell = it->next();
+                continue;
+            }
+            else //last element, leave loop
+            {
+                break;
+            }
+        }
+#ifdef DEBUG
+    std::cout << "Downward pass: " << cur_cell->debug_info() << std::endl;
+#endif
         m2l_downward_pass(cur_cell);
         l2l_downward_pass(cur_cell);
 
@@ -282,7 +318,8 @@ void FMM2D::downward_pass()
         if(it->has_next())
         {
             cur_cell = it->next();
-        } else //last element, leave loop
+        } 
+        else //last element, leave loop
         {
             break;
         }

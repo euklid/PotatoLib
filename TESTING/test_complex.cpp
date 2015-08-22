@@ -59,7 +59,6 @@ int main()
     
     assert(b == (b*a)/a);
     c = b;
-    
     std::cout << c.real << " " << c.img << std::endl;
     std::cout << b.real << " " << b.img << std::endl;
     std::cout << a.real << " " << a.img << std::endl;
@@ -76,5 +75,10 @@ int main()
     a = complex_t::log(complex_t(-1,1));
     std::cout << a.real <<" " << a.img << std::endl;
     
+    //division
+    a = complex_t(1,2);
+    b = complex_t(3,4);
+    ab =a*b;
+    assert(b == ab/a);
     
 }

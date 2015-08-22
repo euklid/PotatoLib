@@ -188,8 +188,8 @@ int main(int argc, char** argv)
     std::cout << "FMM with " << src_elements.size() << " sources and " 
             << tgt_elements.size() << " targets took " << fmm_sec << " seconds and "
             << fmm_n_sec << " nanoseconds" << std::endl;
-#define OUTPUT 1
-#if OUTPUT
+#define OUTPUT_FMM 0
+#if OUTPUT_FMM
 
     for(std::vector<Element*>::const_iterator it = tgt_elements.begin(); 
             it !=tgt_elements.end(); 
@@ -197,13 +197,14 @@ int main(int argc, char** argv)
     {
         std::cout << (*it)->get_target_value() << std::endl;
     }
-    
+#endif
     
     // direct method to compare
     std::vector<double> direct_val = direct_method(argv[1]);
     
     //calculate errors and print them
-    
+#define OUTPUT_COMP 1
+#if OUTPUT_COMP
     std::cout << direct_val.size() << std::endl;
     unsigned int num_tgts = direct_val.size();
     for(int i = 0; i<num_tgts; i++)
