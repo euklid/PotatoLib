@@ -67,6 +67,10 @@ void FMM2D::upward_pass()
 #endif
 
         // leaf node has to calculate its moments
+        if(cur_cell->get_source_elements().empty()) 
+        {
+            continue;
+        }
         if (cur_cell->is_leaf())
         {
             std::vector<complex_t> moments = m_kernel->calc_moments_cmp(cur_cell->get_source_elements(),
@@ -128,6 +132,10 @@ void FMM2D::m2l_downward_pass(Cell* cur_cell)
     for(unsigned int i = 0; i<num_interaction_list; i++)
     {
         std::vector<complex_t> shifted_moments(m_loc_terms,0);
+        if(interaction_list[i]->get_source_elements().empty())
+        {
+            continue;
+        }
         m_kernel->M2L_cmp(interaction_list[i]->get_moments_cmp(),
                           interaction_list[i]->get_center(),
                           shifted_moments,

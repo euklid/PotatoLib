@@ -131,7 +131,7 @@ complex_t Laplace2DKernel::L2element_cmp(const std::vector<complex_t> &local_in,
 {
     complex_t dist = (complex_t)el.get_position() - local_center;
     unsigned int num_local_exp = local_in.size();
-    complex_t fac;
+    complex_t fac(1,0);
     complex_t res = local_in[0];
     for(int i = 1; i<num_local_exp; i++)
     {

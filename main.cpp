@@ -209,7 +209,7 @@ int main(int argc, char** argv)
     unsigned int num_tgts = direct_val.size();
     for(int i = 0; i<num_tgts; i++)
     {
-        std::cout << "diff: dir: " << direct_val[i] <<" fmm: " << tgt_elements[i]->get_target_value() << std::endl;
+        std::cout << "diff: dir: " << direct_val[i] <<" fmm: " << tgt_elements[i]->get_target_value() << " diff: " << direct_val[i]-tgt_elements[i]->get_target_value() << std::endl;
     }
 #endif
     std::cout << "Hello World!" << std::endl;
