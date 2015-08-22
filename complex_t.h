@@ -64,7 +64,7 @@ struct complex_t
     complex_t & operator*=(const complex_t & a)
     {
         double old_real = real;
-        real = old_real*a.real + img*a.img;
+        real = old_real*a.real - img*a.img;
         img = old_real*a.img + img*a.real;
         return *this;
     }
@@ -128,16 +128,14 @@ struct complex_t
         double a_abs2 = a.abs2();
         real = old_real*a.real + img*a.img;
         real /= a_abs2;
-        img = img * a.real - real*a.img;
+        img = img * a.real - old_real*a.img;
         img /= a_abs2;
         return *this;
     }
     
-    complex_t & operator-()
+    complex_t  operator-()
     {
-        img = -img;
-        real = -real;
-        return *this;
+        return complex_t(-real,-img);
     }
     
     double arg() const
