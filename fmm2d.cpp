@@ -62,6 +62,9 @@ void FMM2D::upward_pass()
     while (it->has_next())
     {
         Cell *cur_cell = it->next();
+#ifdef DEBUG
+        std::cout << "current upward pass cell is " << cur_cell->debug_info() << std::endl;
+#endif
 
         // leaf node has to calculate its moments
         if (cur_cell->is_leaf())
@@ -85,7 +88,7 @@ void FMM2D::upward_pass()
             for(unsigned int i = 1; i<num_children; i++)
             {
                 cur_child = children[i];
-                std::vector<complex_t> mom_summand;
+                std::vector<complex_t> mom_summand(m_exp_terms,0);
                 m_kernel->M2M_cmp(cur_child->get_moments_cmp(),
                                   cur_child->get_center(),
                                   mom_summand,

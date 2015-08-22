@@ -105,6 +105,7 @@ unsigned int Point::get_dimension() const
 
 std::ostream &operator<<( std::ostream &output, const Point &p )
 {
+    if(p.m_dim == 0) return output;
     output << p.m_coord[0];
     for(int i = 1; i<p.m_dim; i++)
     {

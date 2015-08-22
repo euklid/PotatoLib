@@ -1,4 +1,5 @@
 #include "cell.h"
+#include <sstream>
 
 Cell::Cell(unsigned int dimension, double size, Point const & center) :
     m_dim(dimension),
@@ -286,3 +287,11 @@ int Cell::get_leaf_block_start_pos() const
  {
      m_leaf_number = leaf_number;
  }
+ 
+std::string Cell::debug_info() const
+{
+    std::stringstream sstr;
+    sstr << "Cell(id:"  <<m_id<<", lvl:"<<m_level << 
+            ", pos:" << m_grid_pos << ((is_leaf())?", lf":", fa") << ")";
+    return sstr.str();
+}

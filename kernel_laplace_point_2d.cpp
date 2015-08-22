@@ -33,7 +33,8 @@ std::vector<complex_t> Laplace2DKernel::calc_moments_cmp(const std::vector<Eleme
     // using recursive multiplication get all exponentiations for a fixed element to compute
     // moments using M_k(z_c) = \sum_{i=1}^m q(z_i)(z_i-z_c)^k/k!
     std::vector<complex_t> moments(num_moments,0);
-    for(int i = 0; i<elements.size(); i++)
+    unsigned int num_el = elements.size();
+    for(unsigned int i = 0; i<num_el; i++)
     {
         complex_t contrib = elements[i]->get_value();
         const complex_t fac = complex_t(elements[i]->get_position())-mom_center;
@@ -96,19 +97,24 @@ void Laplace2DKernel::M2M_cmp(std::vector<complex_t> const & mom_in,
                               std::vector<complex_t> & mom_out,
                               complex_t const & mom_out_center) const
 {
-    mom_out.resize(mom_in.size(),0);
+    assert(mom_in.size());
+    if(mom_out.empty())
+    {
+        mom_out.resize(mom_in.size(),0);
+    }
     // compute (z_c - z_c')^k/k! for all k from 0 to mom_in.size()-1 to reuse them
     std::vector<complex_t> factors(mom_in.size(),0);
     const complex_t diff = mom_in_center-mom_out_center;
-    factors[0] = complex_t(1);
-    for(int i = 1; i<mom_in.size(); i++)
+    factors[0] = complex_t(1,0);
+    unsigned int num_mom = mom_in.size();
+    for(unsigned int i = 1; i<num_mom; i++)
     {
         factors[i] = factors[i-1]*(diff/i);
     }
 
-    for(int i = 0; i< mom_in.size(); i++)
+    for(unsigned int i = 0; i< num_mom; i++)
     {
-        for(int j = 0; j<=i; j++)
+        for(unsigned int j = 0; j<=i; j++)
         {
             mom_out[i] += factors[i-j]*mom_in[j];
         }

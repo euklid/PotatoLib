@@ -6,6 +6,7 @@
 #include "element.h"
 #include "point.h"
 #include "complex_t.h"
+#include <string>
 
 class Cell
 {
@@ -68,6 +69,10 @@ public:
     
     virtual int get_leaf_number() const;
     virtual void set_leaf_number(int leaf_number);
+    
+    virtual std::string debug_info() const;
+
+    
     virtual ~Cell();
 
 protected:
