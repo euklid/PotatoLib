@@ -113,3 +113,13 @@ std::ostream &operator<<( std::ostream &output, const Point &p )
     }
     return output;
 }
+
+Point Point::operator*(double a) const
+{
+    Point res(*this);
+    for(int i = 0; i<m_dim; i++)
+    {
+        res[i] *= a;
+    }
+    return res;
+}

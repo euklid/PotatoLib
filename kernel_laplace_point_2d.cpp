@@ -13,20 +13,7 @@ double Laplace2DKernel::direct(Element const & target, Element const & src) cons
     {
         return 0;
     }
-    return std::log(Point::dist(src.get_position(),target.get_position()));
-}
-
-complex_t Laplace2DKernel::direct_cmp(const Element &target, const Element &src) const
-{
-    assert(src.get_type() & Element::SOURCE);
-    assert(target.get_type() & Element::TARGET);
-    // on identical points no calculation
-    if(((PointElement&)src).get_position() == ((PointElement&)target).get_position())
-    {
-        return 0;
-    }
-    
-    return std::log(Point::dist(src.get_position(),target.get_position()));
+    return -std::log(Point::dist(src.get_position(),target.get_position()));
 }
 
 std::vector<complex_t> Laplace2DKernel::calc_moments_cmp(const std::vector<Element *> &elements,
@@ -44,9 +31,6 @@ std::vector<complex_t> Laplace2DKernel::calc_moments_cmp(const std::vector<Eleme
         for(int j = 0; j<num_moments; j++)
         {
             moments[j]+= contrib;
-#ifdef DEBUG
-            std::cout << "calc_moments_cmp: moment contrib "<<j<<" " << contrib.real << " " << contrib.img << std::endl;
-#endif
             contrib*=fac/(j+1);
         }
     }

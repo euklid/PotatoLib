@@ -21,6 +21,7 @@ public:
     Point operator-(Point const & p1) const;
     Point operator+(Point const & p1) const;
     bool operator==(Point const & p) const;
+    Point operator*(double a) const;
     friend std::ostream &operator<<( std::ostream &output, const Point &p );
 
 private:

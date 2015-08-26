@@ -23,6 +23,7 @@ set(SOURCES
             cell2d.cpp
             kernel_laplace_point_2d.cpp
             fmm_gmres_solver.cpp
+            kernel_laplace_constant_element_2d.cpp
 )
 
 set(HEADERS
@@ -40,6 +41,8 @@ set(HEADERS
             kernel_laplace_point_2d.h
             gmres.h
             fmm_gmres_solver.h
+            kernel_laplace_constant_element_2d.h
+            constant_element_2d.h
 )
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 target_link_libraries(${PROJECT_NAME} armadillo superlu m)

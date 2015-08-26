@@ -6,7 +6,19 @@
 #include "fmm2d.h"
 #include "kernel_laplace_point_2d.h"
 #include "fmm_gmres_solver.h"
+#include "constant_element_2d.h"
+#include "kernel_laplace_constant_element_2d.h"
 #include <time.h>
+
+
+
+#define POINT 1
+#define CONST_EL 0
+#define OUTPUT_FMM 1
+#define OUTPUT_COMP 1
+#define FMM_GMRES 0
+#define DIRECT_GMRES 0
+#define DIRECT_SOLVE 0
 
 void read_fmm_config(char* filename,
                      unsigned int & exp_terms,
@@ -19,6 +31,8 @@ void read_fmm_config(char* filename,
     file >> exp_terms >> loc_terms >> max_cell_elements;
     file.close();
 }
+
+//FIXME: be cool and use JSON for data configuration
 
 void read_point2d_elements(char* filename, 
                            std::vector<Element*> & src_el, 
@@ -64,7 +78,71 @@ void read_point2d_elements(char* filename,
     file.close();
 }
 
-std::vector<double> direct_method(char* element_data)
+void read_const2d_elements(char* filename,
+                           std::vector<Element*> & src_el,
+                           std::vector<Element*> & tgt_el,
+                           bool & src_eq_tgt)
+{
+    std::ifstream file;
+    file.open(filename);
+    assert(file.is_open());
+    /**
+     * configuration file is of form:
+     * 
+     * #src_eq_tgt(0|1) 
+     * 1
+     * # num nodes 
+     * 4
+     * # node_nr_ascending(int)  node_x(double) node_y(double)
+     * 0 0.0 0.0
+     * 1 0.0 1.0
+     * 2 1.0 1.0
+     * 3 0.0 1.0
+     * 
+     * #start and end nodes of Elements. We assume that the enumeration of
+     * #elements is counter-clock-wise
+     * # node_start_nr node_end_nr s(0|1) t(0|1) init_val
+     * 0 1 1 1 0.4
+     * 1 2 1 1 0.4
+     * 2 3 1 1 0.4
+     * 3 0 1 1 0.4
+     * 
+     */
+    
+    file >> src_eq_tgt;
+    double x, y, init_val;
+    int source, target;
+    int id = 0;
+    int num_nodes;
+    file >> num_nodes;
+    std::vector<Point> id_nodes(num_nodes,Point(2));
+    for(int i = 0; i< num_nodes; i++)
+    {
+        file >> id >> x >> y;
+        id_nodes[i][0] = x;
+        id_nodes[i][1] = y;
+    }
+    id = 0;
+    int start_id, end_id;
+    while(file >> start_id >> end_id >> source >> target >> init_val)
+    {
+        int type = source*Element::SOURCE + target*Element::TARGET;
+        ConstEl2D* el = new ConstEl2D(id_nodes[start_id],id_nodes[end_id],id,type);
+        if(source) 
+        {
+            src_el.push_back(el);
+            el->set_value(init_val);
+        }
+        if(target)
+        {
+            tgt_el.push_back(el);
+        }
+        id++;
+    }
+    file.close();
+}
+
+std::vector<double> direct_method_points(char* element_data)
 {
     //read data
     std::ifstream file(element_data);
@@ -141,6 +219,41 @@ std::vector<double> direct_method(char* element_data)
     return tgt_val;
 }
 
+void direct_method_elements(std::vector<Element*> const & src_el,
+                            std::vector<Element*> const & tgt_el)
+{
+    unsigned int num_src_el = src_el.size();
+    unsigned int num_tgt_el = tgt_el.size();
+    KernLapConstEl2D kernel;
+    
+    timespec  time_dir_s, time_dir_e;
+    time_t  dir_sec;
+    long  dir_n_sec;
+  
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&time_dir_s);
+    
+    for(unsigned int tgt = 0; tgt < num_tgt_el; tgt++)
+    {
+        double val = 0;
+        Element* t = tgt_el[tgt];
+        for(unsigned int src = 0; src < num_src_el; src++)
+        {
+            Element* s = src_el[src];
+            val += s->get_value()*kernel.direct(*t,*s);
+        }
+        t->set_target_value(val);
+    }
+    
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&time_dir_e);
+    dir_sec = time_dir_e.tv_sec-time_dir_s.tv_sec;
+    dir_n_sec = std::max(time_dir_e.tv_nsec - time_dir_s.tv_nsec,
+                         1000000000l - (time_dir_e.tv_nsec - time_dir_s.tv_nsec)) ;
+    
+    std::cout << "Direct method with " << num_src_el << " sources and " 
+            << num_tgt_el << " targets took " << dir_sec << " seconds and "
+            << dir_n_sec << " nanoseconds" << std::endl;
+}
+
 int main(int argc, char** argv)
 {
     if(argc < 2)
@@ -155,13 +268,17 @@ int main(int argc, char** argv)
         return -1;
     }
    
+    struct timespec time_fmm_s, time_fmm_e, time_dir_s, time_dir_e;
+    time_t fmm_sec, dir_sec;
+    long fmm_n_sec, dir_n_sec;
+    
     std::vector<Element*> src_elements, tgt_elements;
     unsigned int exp_terms, loc_terms, max_cell_elements;
     bool src_eq_tgt;
     read_fmm_config(argv[2], exp_terms, loc_terms, max_cell_elements);
+            
+#if POINT
     read_point2d_elements(argv[1],src_elements,tgt_elements,src_eq_tgt);
-    
-    
     
     
     FMM2D fmm(src_elements,
@@ -173,13 +290,26 @@ int main(int argc, char** argv)
     Laplace2DKernel laplace;
     fmm.set_kernel(laplace);
     
-    struct timespec time_fmm_s, time_fmm_e, time_dir_s, time_dir_e;
-    time_t fmm_sec, dir_sec;
-    long fmm_n_sec, dir_n_sec;
-  
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&time_fmm_s);
-    
     fmm.calculate();
+#endif
+    
+#if CONST_EL
+    read_const2d_elements(argv[1],src_elements,tgt_elements,src_eq_tgt);
+    FMM2D fmm(src_elements,
+              tgt_elements,
+              exp_terms,
+              loc_terms,
+              max_cell_elements,
+              src_eq_tgt);
+    KernLapConstEl2D const_lap2d;
+    fmm.set_kernel(const_lap2d);
+    
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&time_fmm_s);
+    fmm.calculate();
+    
+    
+#endif
     
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&time_fmm_e);
     fmm_sec = time_fmm_e.tv_sec-time_fmm_s.tv_sec;
@@ -188,7 +318,8 @@ int main(int argc, char** argv)
     std::cout << "FMM with " << src_elements.size() << " sources and " 
             << tgt_elements.size() << " targets took " << fmm_sec << " seconds and "
             << fmm_n_sec << " nanoseconds" << std::endl;
-#define OUTPUT_FMM 0
+    
+
 #if OUTPUT_FMM
 
     for(std::vector<Element*>::const_iterator it = tgt_elements.begin(); 
@@ -199,11 +330,26 @@ int main(int argc, char** argv)
     }
 #endif
     
+std::vector<double> direct_val;
+
+#if POINT
     // direct method to compare
-    std::vector<double> direct_val = direct_method(argv[1]);
+    direct_val = direct_method_points(argv[1]);
+#endif
+    
+#if CONST_EL
+    unsigned int num_tgt_el = tgt_elements.size();
+    direct_val.resize(num_tgt_el,0);
+    for(unsigned int i = 0; i<num_tgt_el; i++)
+    {
+        direct_val[i] = tgt_elements[i]->get_target_value();
+    }
+    direct_method_elements(src_elements,tgt_elements);
+
+#endif
     
     //calculate errors and print them
-#define OUTPUT_COMP 1
+
 #if OUTPUT_COMP
     std::cout << direct_val.size() << std::endl;
     unsigned int num_tgts = direct_val.size();

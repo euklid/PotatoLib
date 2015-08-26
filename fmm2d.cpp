@@ -69,6 +69,7 @@ void FMM2D::upward_pass()
         // leaf node has to calculate its moments
         if(cur_cell->get_source_elements().empty()) 
         {
+            cur_cell->set_moments_cmp(std::vector<complex_t>(m_exp_terms,0));
             continue;
         }
         if (cur_cell->is_leaf())
@@ -218,7 +219,7 @@ void FMM2D::direct_downward_pass(Cell *target)
                     prec_block(i,j-in_leaf_start) = coeff;
                 }
             }
-            contrib += -s->get_value()*coeff;
+            contrib += s->get_value()*coeff;
         }
         t->set_target_value(t->get_target_value()+contrib);
     }
@@ -382,6 +383,6 @@ std::pair<double, Point> get_bounding_cube(std::vector<Element*> const & element
     }
     
     //extend cube a little bit in all directions to be sure to contain all elements
-    max_dist = 1.02*max_dist;
+    max_dist = 1.05*max_dist;
     return std::make_pair(max_dist,center);
 }

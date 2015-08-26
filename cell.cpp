@@ -52,7 +52,7 @@ void Cell::set_source_elements(const std::vector<Element *> &el)
 #if DEBUG
     for(int i = 0; i< el.size(); i++)
     {
-        assert(el[i]->get_type()==Element::SOURCE);
+        assert(el[i]->get_type() & Element::SOURCE);
     }
 #endif
     m_src_elements = el;
@@ -74,7 +74,7 @@ void Cell::set_target_elements(const std::vector<Element *> &el)
 #if DEBUG
     for(int i = 0; i< el.size(); i++)
     {
-        assert(el[i]->get_type()==Element::TARGET);
+        assert(el[i]->get_type() & Element::TARGET);
     }
 #endif
     m_target_elements = el;
