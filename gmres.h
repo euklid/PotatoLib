@@ -104,7 +104,7 @@ GMRES(Operator &A, Vector &x, const Vector &b,
 
   while (j <= max_iter) {
     v[0] = r * (1.0 / beta);    // ??? r / beta
-    s = 0.0;
+    s = Vector(m+1); // s = 0.0; //armadillo automaticall sets everything to 0
     s(0) = beta;
     
     for (i = 0; i < m && j <= max_iter; i++, j++) {

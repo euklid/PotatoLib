@@ -12,11 +12,11 @@
 
 
 
-#define POINT 1
-#define CONST_EL 0
-#define OUTPUT_FMM 1
-#define OUTPUT_COMP 1
-#define FMM_GMRES 0
+#define POINT 0
+#define CONST_EL 1
+#define OUTPUT_FMM 0
+#define OUTPUT_COMP 0
+#define FMM_GMRES 1
 #define DIRECT_GMRES 0
 #define DIRECT_SOLVE 0
 
@@ -308,7 +308,6 @@ int main(int argc, char** argv)
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&time_fmm_s);
     fmm.calculate();
     
-    
 #endif
     
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&time_fmm_e);
@@ -322,6 +321,13 @@ int main(int argc, char** argv)
 
 #if OUTPUT_FMM
 
+    for(std::vector<Element*>::const_iterator it = tgt_elements.begin(); 
+            it !=tgt_elements.end(); 
+            ++it)
+    {
+        std::cout << (*it)->get_target_value() << std::endl;
+    }
+    fmm.recalculate();
     for(std::vector<Element*>::const_iterator it = tgt_elements.begin(); 
             it !=tgt_elements.end(); 
             ++it)
@@ -350,6 +356,31 @@ std::vector<double> direct_val;
     
     //calculate errors and print them
 
+#if CONST_EL && FMM_GMRES
+    std::vector<double> b_goals(tgt_elements.size(),1);
+    std::vector<double> init_guess(tgt_elements.size(),100);
+    std::vector<double> solution(tgt_elements.size(),0);
+    FMM_GMRES_Solver fmm_solv(fmm,b_goals,init_guess,solution);
+    double tol = 1e-8;
+    fmm_solv.solve(100,100,tol);
+    
+    for(int i = 0; i<solution.size(); i++)
+    {
+        std::cout << solution[i] << std::endl;
+    }
+    for(int i = 0; i<solution.size(); i++)
+    {
+        src_elements[i]->set_value(solution[i]);
+    }
+    fmm.recalculate();
+    std::cout << "after recalc" << std::endl;
+    for(int i = 0; i<solution.size(); i++)
+    {
+        std::cout << tgt_elements[i]->get_target_value() << std::endl;
+    }
+    
+#endif
+    
 #if OUTPUT_COMP
     std::cout << direct_val.size() << std::endl;
     unsigned int num_tgts = direct_val.size();

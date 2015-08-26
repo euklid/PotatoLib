@@ -39,7 +39,7 @@ void FMM2D::recalculate()
     if (!m_tree) {
         build_tree();
     }
-    //recalculate causes moments, etc. to be reset.
+    reset();
     upward_pass();
     downward_pass();
 }
@@ -225,9 +225,7 @@ void FMM2D::direct_downward_pass(Cell *target)
     }
     if(make_prec)
     {
-        // set block matrix in preconditioner
-        int submatrix_pos = target->get_leaf_block_start_pos();
-        
+        // set block matrix in preconditioner        
         m_precond[target->get_leaf_number()] = prec_block;
     }
 }
@@ -385,4 +383,29 @@ std::pair<double, Point> get_bounding_cube(std::vector<Element*> const & element
     //extend cube a little bit in all directions to be sure to contain all elements
     max_dist = 1.05*max_dist;
     return std::make_pair(max_dist,center);
+}
+
+void FMM2D::reset()
+{
+    //set target values to 0
+    unsigned int num_tgt_el = m_tgt_elements.size();
+    for(unsigned int i = 0; i<num_tgt_el; i++)
+    {
+        m_tgt_elements[i]->set_target_value(0);
+    }
+    
+    //set computed moments and local expansions to 0 for each cell
+    std::vector<Cell*> const & cells = m_tree->get_cells();
+    unsigned int num_cells = cells.size();
+    for(unsigned int i = 0; i<num_cells; i++)
+    {
+        Cell* cur_cell = cells[i];
+        cur_cell->set_local_exps(std::vector<double>());
+        cur_cell->set_local_exps_cmp(std::vector<complex_t>());
+        cur_cell->set_moments(std::vector<double>());
+        cur_cell->set_moments_cmp(std::vector<complex_t>());
+    }
+         
+    
+    
 }

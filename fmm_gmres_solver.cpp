@@ -59,7 +59,7 @@ public:
     /**
      * solves system (this)x = vec and returns x
      * Further, because this is the preconditioner computed by a FMM,
-     * we have to first solve the henn and egg problem to obtain the matrix
+     * we have to first solve the hen and egg problem to obtain the matrix
      * entries before we can actually do anything and this is only possible 
      * after the FMM calculation has been completed at least once.
      * KNOWING the preconditioner will be called AFTER the first calculation
@@ -83,9 +83,9 @@ public:
         {
             perm_vec(i) = vec(permutation[i]); // i-th entry is permutation(i)-th element
         }
-        arma::vec perm_sol;
+        arma::vec perm_sol(vec.size());
         LUP_solve(perm_vec, perm_sol);
-        arma::vec sol;
+        arma::vec sol(vec.size());
         
         //bring solution in correct order
         for(unsigned int i = 0; i<perm_size; i++)
@@ -99,13 +99,13 @@ private:
     void block_LUP()
     {
         unsigned int num_blocks = m_prec->size();
-        m_L.reserve(num_blocks);
-        m_U.reserve(num_blocks);
-        m_P.resize(num_blocks,0);
+        m_L.resize(num_blocks,arma::mat());
+        m_U.resize(num_blocks,arma::mat());
+        m_P.resize(num_blocks,arma::uvec());
         for(unsigned int i = 0; i<num_blocks; i++)
         {
-            arma::mat L,U,P;
-            arma::lu(m_L[i],m_U[i],P,m_prec->at(i));
+            arma::mat P;
+            assert(arma::lu(m_L[i],m_U[i],P,m_prec->at(i)));
             unsigned int block_size = P.n_cols;
             arma::uvec perm(block_size);
             for(unsigned int j = 0; j < block_size; j++)
@@ -113,6 +113,7 @@ private:
                 perm(j) = j;
             }
             m_P[i] = arma::conv_to<arma::uvec >::from(P*perm);
+            std::cout << m_P[i] << std::endl;
         }
     }
     
@@ -127,7 +128,7 @@ private:
             // are triangular matrices and armadillo can use this to accelerate
             // the solution
             
-            unsigned int block_size = m_prec->at(i).size();
+            unsigned int block_size = m_prec->at(i).n_cols;
             arma::vec block_vec(block_size);
             unsigned int block_start = block_starts[i];
             assert(m_P[i].size() == block_size);
@@ -159,7 +160,7 @@ private:
 
 FMM_GMRES_Solver::FMM_GMRES_Solver(FMM & fmm,
                                    std::vector<double> & boundary_goals,
-                                   std::vector<double> & init_guess,
+                                   std::vector<double> const & init_guess,
                                    std::vector<double> & solution) :
     m_fmm(fmm),
     m_boundary_goals(boundary_goals),
@@ -173,7 +174,7 @@ void FMM_GMRES_Solver::solve(int max_iterations, int m, double &tolerance)
     Operator A(m_fmm);
     arma::vec x=arma::conv_to<arma::vec>::from(m_init_guess);
     arma::vec b(m_boundary_goals);
-    arma::mat H(m,m);
+    arma::mat H(m+1,m+1);
     Precond M(m_fmm);
     
     GMRES<Operator,

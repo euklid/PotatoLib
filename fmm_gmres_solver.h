@@ -14,7 +14,7 @@ public:
      */
     FMM_GMRES_Solver(FMM  & fmm,
                      std::vector<double> & boundary_goals,
-                     std::vector<double> & init_guess,
+                     std::vector<double> const & init_guess,
                      std::vector<double> & solution);
     
     /**

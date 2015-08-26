@@ -80,7 +80,7 @@ std::vector<Element*> const & FMM::get_permuted_elements()
         m_perm_el.insert(m_perm_el.end(), cell_el.begin(), cell_el.end());
     }
     
-    m_permutation.reserve(m_perm_el.size());
+    m_permutation.resize(m_perm_el.size(),0);
     for(int i = 0; i<m_permutation.size(); i++)
     {
         unsigned int id = m_perm_el[i]->get_id();

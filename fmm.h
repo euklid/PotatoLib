@@ -72,6 +72,7 @@ protected:
     virtual void upward_pass() = 0;
     virtual void downward_pass() = 0;
     virtual void evaluate() = 0;
+    virtual void reset() = 0;
 
     std::vector<Element*> const & m_src_elements;
     std::vector<Element*> const & m_tgt_elements;
