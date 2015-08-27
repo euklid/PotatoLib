@@ -23,7 +23,7 @@ public:
     virtual void calculate(bool precond = false);
     virtual void recalculate();
 
-private:
+protected:
     virtual void build_tree();
     virtual void upward_pass();
     virtual void downward_pass();

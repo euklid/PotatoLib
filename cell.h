@@ -42,12 +42,18 @@ public:
     virtual void set_level(unsigned int lvl);
     virtual unsigned int get_level() const;
     virtual const double get_size() const;
-    virtual void add_to_interaction_list(Cell* cell);
-    virtual void add_to_direct_list(Cell* cell);
-    virtual std::vector<Cell*> get_interaction_list() const;
-    virtual std::vector<unsigned int> get_interaction_list_ids() const;
-    virtual std::vector<Cell*> get_direct_list() const;
-    virtual std::vector<unsigned int> get_direct_list_ids() const;
+    //virtual void add_to_interaction_list(Cell* cell);
+    //virtual void add_to_direct_list(Cell* cell);
+    
+    virtual void init_empty_lists(unsigned int num_lists);
+    virtual void add_to_list(Cell* cell, unsigned int list_number);
+    virtual std::vector<Cell*> get_list(unsigned int list_number) const;
+    virtual std::vector<unsigned int> get_list_ids(unsigned int list_number) const;
+    //virtual std::vector<Cell*> get_interaction_list() const;
+    //virtual std::vector<unsigned int> get_interaction_list_ids() const;
+    //virtual std::vector<Cell*> get_direct_list() const;
+    //virtual std::vector<unsigned int> get_direct_list_ids() const;
+    
     virtual bool has_level_grid_position() const;
     virtual Point const & get_level_grid_position() const;
     virtual void set_level_grid_position(Point const & grid_pos);
@@ -78,8 +84,9 @@ public:
 protected:
     std::vector<Cell*> m_children;
     Cell* m_father;
-    std::map<unsigned int, Cell*> m_interaction_list;
-    std::map<unsigned int, Cell*> m_direct_list;
+    //std::map<unsigned int, Cell*> m_interaction_list;
+    //std::map<unsigned int, Cell*> m_direct_list;
+    std::vector<std::map<unsigned int, Cell*> > m_lists;
     std::vector<Element*> m_src_elements;
     std::vector<Element*> m_target_elements;
     unsigned int m_id;

@@ -123,6 +123,7 @@ void Tree2D::generate_interaction_lists()
         for (; it!=lvl_cells.end(); ++it)
         {
             Cell* cur_cell = m_cells[*it];
+            cur_cell->init_empty_lists(2);
             assert(cur_cell->get_id() == *it);
 
             Cell* cur_cell_father = cur_cell->get_father();
@@ -156,24 +157,24 @@ void Tree2D::generate_interaction_lists()
                                                                      m_root);
                     if (Point::max_norm_dist(children_cell_grid_pos,cur_cell_grid_pos) > 1)
                     {
-                        cur_cell->add_to_interaction_list(*children_it);
+                        cur_cell->add_to_list(*children_it,1);
                     }
                     else if ((*children_it)->is_leaf() || cur_cell->is_leaf() || i == m_max_level)
                     {
-                        cur_cell->add_to_direct_list(*children_it);
+                        cur_cell->add_to_list(*children_it,0);
                     }
                 }
             }
 #ifdef DEBUG
             std::cout << "Cell " << cur_cell->get_id() << " at level "<< cur_cell->get_level() <<" at " << cur_cell->get_level_grid_position() << " interaction list is" << std::endl;
-            std::vector<unsigned int> interaction_list = cur_cell->get_interaction_list_ids();
+            std::vector<unsigned int> interaction_list = cur_cell->get_list_ids(1);
             for(unsigned int i = 0; i< interaction_list.size(); i++)
             {
                 std::cout << interaction_list[i] << " ";
             }
             std::cout << std::endl;
             std::cout << "Cell " << cur_cell->get_id() << " direct list is" << std::endl;
-            std::vector<unsigned int> direct_list = cur_cell->get_direct_list_ids();
+            std::vector<unsigned int> direct_list = cur_cell->get_list_ids(0);
             for(unsigned int i = 0; i< direct_list.size(); i++)
             {
                 std::cout << direct_list[i] << " ";

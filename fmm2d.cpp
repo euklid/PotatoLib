@@ -133,7 +133,7 @@ void FMM2D::m2l_downward_pass(Cell* cur_cell)
     {
         local_exps.resize(m_loc_terms,0);
     }
-    std::vector<Cell*> const & interaction_list = cur_cell->get_interaction_list();
+    std::vector<Cell*> const & interaction_list = cur_cell->get_list(1);
     unsigned int num_interaction_list = interaction_list.size();
     for(unsigned int i = 0; i<num_interaction_list; i++)
     {
@@ -183,7 +183,7 @@ void FMM2D::l2l_downward_pass(Cell *cell)
  */
 void FMM2D::direct_downward_pass(Cell *target)
 {
-    std::vector<Cell*> direct_neighbours = target->get_direct_list();
+    std::vector<Cell*> direct_neighbours = target->get_list(0);
     unsigned int num_dir_neighbours = direct_neighbours.size();
     if (num_dir_neighbours == 0) return;
     std::vector<Element*> const & target_elements = target->get_target_elements();

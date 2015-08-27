@@ -15,33 +15,6 @@ Cell::Cell(unsigned int dimension, double size, Point const & center) :
 
 Cell::~Cell() {}
 
-/*void Cell::set_elements(std::vector<Element*> const & elements)
-
-    m_target_elements.clear();
-    m_src_elements.clear();
-    std::vector<Element*>::const_iterator it = elements.begin();
-    for(;it!=elements.end();++it)
-    {
-        if((*it)->get_type() & Element::SOURCE)
-        {
-            m_src_elements.push_back(*it);
-        }
-        if((*it)->get_type() & Element::TARGET)
-        {
-            m_target_elements.push_back(*it);
-        }
-    }
-}
-*/
-
-/*std::vector<Element*> Cell::get_elements()
-{
-    std::vector<Element*> elements(m_src_elements);
-    elements.insert(elements.end(),m_target_elements.begin(),m_target_elements.end());
-    return elements;
-}
-*/
-
 const std::vector<Element *> &Cell::get_source_elements() const
 {
     return m_src_elements;
@@ -58,12 +31,6 @@ void Cell::set_source_elements(const std::vector<Element *> &el)
     m_src_elements = el;
 }
 
-/*std::vector<Element*> & Cell::get_source_elements()
-{
-    return m_src_elements;
-}
-*/
-
 const std::vector<Element *> &Cell::get_target_elements() const
 {
     return m_target_elements;
@@ -79,12 +46,6 @@ void Cell::set_target_elements(const std::vector<Element *> &el)
 #endif
     m_target_elements = el;
 }
-
-/*std::vector<Element*> & Cell::get_target_elements()
-{
-    return m_target_elements;
-}
-*/
 
 const std::vector<Element*> Cell::get_elements() const
 {
@@ -178,58 +139,97 @@ void Cell::set_moments_cmp(std::vector<complex_t> const & moments_cmp)
     m_moments_cmp = moments_cmp;
 }
 
-void Cell::add_to_interaction_list(Cell *cell)
+void Cell::init_empty_lists(unsigned int num_lists)
 {
-    m_interaction_list.insert(std::make_pair(cell->get_id(),cell));
+    m_lists = std::vector<std::map<unsigned int, Cell*> >(num_lists,std::map<unsigned int, Cell*>());
 }
 
-void Cell::add_to_direct_list(Cell *cell)
+void Cell::add_to_list(Cell* cell, unsigned int list_number)
 {
-    m_direct_list.insert(std::make_pair(cell->get_id(),cell));
+    assert(m_lists.size() > list_number);
+    m_lists[list_number].insert(std::make_pair(cell->get_id(),cell));
 }
 
-std::vector<Cell *> Cell::get_interaction_list() const
+std::vector<Cell*> Cell::get_list(unsigned int list_number) const
 {
-    std::vector<Cell*> linearized_interaction_list;
-    std::map<unsigned int, Cell*>::const_iterator it = m_interaction_list.begin();
-    for(; it != m_interaction_list.end();  ++it)
+    assert(list_number < m_lists.size());
+    std::vector<Cell*> linearized_list;
+    std::map<unsigned int, Cell*> const & sel_list = m_lists.at(list_number);
+    std::map<unsigned int, Cell*>::const_iterator it = sel_list.begin();
+    for(; it != sel_list.end();  ++it)
     {
-        linearized_interaction_list.push_back(it->second);
+        linearized_list.push_back(it->second);
     }
-    return linearized_interaction_list;
+    return linearized_list;
 }
 
-std::vector<unsigned int> Cell::get_interaction_list_ids() const
+std::vector<unsigned int> Cell::get_list_ids(unsigned int list_number) const
 {
-    std::vector<unsigned int> linearized_interaction_list_ids;
-    std::map<unsigned int, Cell*>::const_iterator it = m_interaction_list.begin();
-    for(; it != m_interaction_list.end();  ++it)
+    assert(list_number < m_lists.size());
+    std::vector<unsigned int> linearized_list_ids;
+    std::map<unsigned int, Cell*> const & sel_list = m_lists.at(list_number);
+    std::map<unsigned int, Cell*>::const_iterator it = sel_list.begin();
+    for(; it != sel_list.end();  ++it)
     {
-        linearized_interaction_list_ids.push_back(it->first);
+        linearized_list_ids.push_back(it->first);
     }
-    return linearized_interaction_list_ids;
+    return linearized_list_ids;
 }
 
-std::vector<Cell*> Cell::get_direct_list() const
-{
-    std::vector<Cell*> linearized_direct_list;
-    std::map<unsigned int, Cell*>::const_iterator it = m_direct_list.begin();
-    for(; it != m_direct_list.end();  ++it)
-    {
-        linearized_direct_list.push_back(it->second);
-    }
-    return linearized_direct_list;
-}
-std::vector<unsigned int> Cell::get_direct_list_ids() const
-{
-    std::vector<unsigned int> linearized_direct_list_ids;
-    std::map<unsigned int, Cell*>::const_iterator it = m_direct_list.begin();
-    for(; it != m_direct_list.end();  ++it)
-    {
-        linearized_direct_list_ids.push_back(it->first);
-    }
-    return linearized_direct_list_ids;
-}
+
+//void Cell::add_to_interaction_list(Cell *cell)
+//{
+//    m_interaction_list.insert(std::make_pair(cell->get_id(),cell));
+//}
+//
+//void Cell::add_to_direct_list(Cell *cell)
+//{
+//    m_direct_list.insert(std::make_pair(cell->get_id(),cell));
+//}
+//
+//std::vector<Cell *> Cell::get_interaction_list() const
+//{
+//    std::vector<Cell*> linearized_interaction_list;
+//    std::map<unsigned int, Cell*>::const_iterator it = m_interaction_list.begin();
+//    for(; it != m_interaction_list.end();  ++it)
+//    {
+//        linearized_interaction_list.push_back(it->second);
+//    }
+//    return linearized_interaction_list;
+//}
+//
+//std::vector<unsigned int> Cell::get_interaction_list_ids() const
+//{
+//    std::vector<unsigned int> linearized_interaction_list_ids;
+//    std::map<unsigned int, Cell*>::const_iterator it = m_interaction_list.begin();
+//    for(; it != m_interaction_list.end();  ++it)
+//    {
+//        linearized_interaction_list_ids.push_back(it->first);
+//    }
+//    return linearized_interaction_list_ids;
+//}
+//
+//std::vector<Cell*> Cell::get_direct_list() const
+//{
+//    std::vector<Cell*> linearized_direct_list;
+//    std::map<unsigned int, Cell*>::const_iterator it = m_direct_list.begin();
+//    for(; it != m_direct_list.end();  ++it)
+//    {
+//        linearized_direct_list.push_back(it->second);
+//    }
+//    return linearized_direct_list;
+//}
+//std::vector<unsigned int> Cell::get_direct_list_ids() const
+//{
+//    std::vector<unsigned int> linearized_direct_list_ids;
+//    std::map<unsigned int, Cell*>::const_iterator it = m_direct_list.begin();
+//    for(; it != m_direct_list.end();  ++it)
+//    {
+//        linearized_direct_list_ids.push_back(it->first);
+//    }
+//    return linearized_direct_list_ids;
+//}
+//
 
 bool Cell::has_level_grid_position() const
 {
