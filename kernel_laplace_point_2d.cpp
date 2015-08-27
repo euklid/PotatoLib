@@ -164,4 +164,56 @@ void Laplace2DKernel::M2L(std::vector<double> const & moments,
                           Point const & mom_center,
                           std::vector<double> & loc_exp,
                           Point const & loc_center) const
-{}
+{
+}
+
+std::vector<double> Laplace2DKernel::calc_local_exp(const std::vector<Element*>& elements, 
+                                                    const Point& loc_center, 
+                                                    int num_loc_exps) const
+{
+    return std::vector<double>();
+}
+
+std::vector<complex_t> Laplace2DKernel::calc_local_exp_cmp(const std::vector<Element*>& elements, 
+                                                           const complex_t& loc_center, 
+                                                           int num_loc_exps) const
+{
+    // using recursive multiplication get all exponentiations for a fixed element to compute
+    // local expansions using L_k(z_l) = \sum_{i=1}^m q(z_i)/(z_i-z_l)^k*(k-1)! for k >=1
+    // L_0(z_l) = \sum_{i=1}^m q(z_i)*-log(z_i-z_l)
+    std::vector<complex_t> loc_exps(num_loc_exps,0);
+    unsigned int num_el = elements.size();
+    for(unsigned int i = 0; i<num_el; i++)
+    {
+        complex_t contrib = elements[i]->get_value();
+        const complex_t fac = complex_t(elements[i]->get_position())-loc_center;
+        loc_exps[0] += -contrib*(complex_t::log(fac));
+        loc_exps[1] += (complex_t(1)*contrib)/fac;
+        for(int j = 2; j<num_loc_exps; j++)
+        {
+            contrib*=complex_t(j-1)/fac;
+            loc_exps[j]+= contrib;
+        }
+    }
+    return loc_exps;
+}
+
+complex_t Laplace2DKernel::M2element_cmp(const std::vector<complex_t>& moments_in, const complex_t& moment_center, const Element& el) const
+{
+    const complex_t dist = complex_t(el.get_position()) - moment_center;
+    unsigned int num_moments = moments_in.size();
+    complex_t fac = complex_t(1,0)/dist;
+    complex_t res = complex_t::log(dist)*moments_in[0] + moments_in[1]*fac;
+    for(int i = 2; i<num_moments; i++)
+    {
+        fac*=complex_t(i-1)/dist;
+        res+=fac*moments_in[i];
+    }
+    return res;
+}
+
+double Laplace2DKernel::M2element(const std::vector<double>& moments_in, const Point& moment_center, const Element& el) const
+{
+    return 0;
+}
+

@@ -48,6 +48,18 @@ public:
     virtual double L2element(std::vector<double> const & local_in,
                            Point loc_in_center,
                            Element const & el) const;
+    virtual std::vector<complex_t> calc_local_exp_cmp(std::vector<Element*> const & elements,
+                                                      complex_t const & loc_center,
+                                                      int num_loc_exps) const;
+    virtual std::vector<double> calc_local_exp(std::vector<Element*> const & elements,
+                                               Point const & loc_center,
+                                               int num_loc_exps) const;
+    virtual complex_t M2element_cmp(std::vector<complex_t> const & moments_in,
+                                    complex_t const & moment_center,
+                                    Element const & el) const;
+    virtual double M2element(std::vector<double> const &  moments_in,
+                             Point const & moment_center,
+                             Element const & el) const;
 };
 
 #endif

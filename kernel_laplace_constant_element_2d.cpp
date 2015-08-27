@@ -87,3 +87,73 @@ complex_t KernLapConstEl2D::L2element_cmp(const std::vector<complex_t>& local_in
 {
     return  Laplace2DKernel::L2element_cmp(local_in, local_center, el)*(M_1_PI/2);
 }
+
+std::vector<double> KernLapConstEl2D::calc_local_exp(const std::vector<Element*>& elements, 
+                                                     const Point& loc_center, 
+                                                     int num_loc_exps) const
+{
+    return std::vector<double>();
+}
+
+std::vector<complex_t> KernLapConstEl2D::calc_local_exp_cmp(const std::vector<Element*>& elements, 
+                                                            const complex_t& loc_center, 
+                                                            int num_loc_exps) const
+{
+    // using recursive multiplication get all exponentiations for a fixed element to compute
+    // moments using L_k(z_l) = \sum_{i=1}^n q(e_i)*conj(tangent_normed_i)*{-(k-2)!/(end_i-center)^(k-1) + (k-2)!/(start_i-center)^(k-1)} 
+    // for k >=2
+    // We have L_1(z_l) = \sum_{i=1}^n q(e_i)*conj(tangent_normed_i)*{-log(end_i-center) + log(start_i-center) }
+    // and     L_0(z_l) = \sum_{i=1}^n q(e_i)*conj(tangent_normed_i)*{-((end_i-center)*(log(end_i-center) - 1)) + (start_i-center)*(log(start_i-center)-1) }
+    std::vector<complex_t> loc_exps(num_loc_exps,0);
+    unsigned int num_el = elements.size();
+    for(unsigned int i = 0; i<num_el; i++)
+    {
+        ConstEl2D* el = dynamic_cast<ConstEl2D*>(elements[i]);
+        complex_t tangent_norm_conj(el->get_end_node()-el->get_start_node());
+        tangent_norm_conj = tangent_norm_conj/ tangent_norm_conj.abs();
+        tangent_norm_conj = tangent_norm_conj.conj();
+        
+        const complex_t fac_tangent_norm = tangent_norm_conj*el->get_value();
+        
+        complex_t fac_end(el->get_end_node());
+        fac_end = fac_end - loc_center;
+        
+        complex_t fac_start(el->get_start_node());
+        fac_start = fac_start - loc_center;
+        
+        const complex_t log_fac_end = complex_t::log(fac_end);
+        const complex_t log_fac_start = complex_t::log(fac_start);
+        
+        loc_exps[0] += fac_tangent_norm*(fac_start*(log_fac_start-complex_t(1)) - fac_end*(log_fac_end -complex_t(1)));
+        loc_exps[1] += fac_tangent_norm*(log_fac_start - log_fac_end);
+        loc_exps[2] += fac_tangent_norm*(complex_t(1)/fac_start - complex_t(1)/fac_end);
+        
+        complex_t contrib_p = fac_tangent_norm;
+        complex_t contrib_n = fac_tangent_norm;
+        
+        for(int j = 3; j<num_loc_exps; j++)
+        {
+            contrib_p *= complex_t(j-2)/fac_start;
+            contrib_n *= complex_t(j-2)/fac_end;
+            loc_exps[j]+= contrib_p - contrib_n;
+        }
+    }
+    return loc_exps;
+}
+
+double KernLapConstEl2D::M2element(const std::vector<double>& moments_in, 
+                                   const Point& moment_center, 
+                                   const Element& el) const
+{
+    return 0;
+}
+
+complex_t KernLapConstEl2D::M2element_cmp(const std::vector<complex_t>& moments_in, 
+                                          const complex_t& moment_center, 
+                                          const Element& el) const
+{
+    return Laplace2DKernel::M2element_cmp(moments_in,moment_center,el)*(M_1_PI/2);
+}
+
+
+
