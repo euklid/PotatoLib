@@ -27,6 +27,7 @@ FMM2D::FMM2D(std::vector<Element*> const & src_elements,
 
 void FMM2D::calculate(bool precond)
 {
+    reset();
     m_make_prec = precond;
     build_tree();
     upward_pass();
@@ -46,6 +47,10 @@ void FMM2D::recalculate()
 
 void FMM2D::build_tree() 
 {
+    if(m_tree)
+    {
+        delete m_tree;
+    }
     m_tree = new Tree2D;
     std::pair<double,Point> bounding_box = get_bounding_cube(m_elements);
     Cell2D* root = new Cell2D(bounding_box.first, bounding_box.second);
@@ -395,6 +400,7 @@ void FMM2D::reset()
     }
     
     //set computed moments and local expansions to 0 for each cell
+    if(!m_tree) return;
     std::vector<Cell*> const & cells = m_tree->get_cells();
     unsigned int num_cells = cells.size();
     for(unsigned int i = 0; i<num_cells; i++)

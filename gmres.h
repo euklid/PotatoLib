@@ -84,7 +84,7 @@ GMRES(Operator &A, Vector &x, const Vector &b,
   Real resid;
   int i, j = 1, k;
   Vector s(m+1), cs(m+1), sn(m+1), w;
-  
+    
   Vector pre_r = b - A*x;
   Vector r = M.solve(pre_r);
   
@@ -104,7 +104,7 @@ GMRES(Operator &A, Vector &x, const Vector &b,
 
   while (j <= max_iter) {
     v[0] = r * (1.0 / beta);    // ??? r / beta
-    s = Vector(m+1); // s = 0.0; //armadillo automaticall sets everything to 0
+    s = Vector(m+1); // s = 0.0; //armadillo automatically sets everything to 0
     s(0) = beta;
     
     for (i = 0; i < m && j <= max_iter; i++, j++) {

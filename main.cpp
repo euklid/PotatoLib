@@ -14,7 +14,7 @@
 
 #define POINT 0
 #define CONST_EL 1
-#define OUTPUT_FMM 0
+#define OUTPUT_FMM 1
 #define OUTPUT_COMP 0
 #define FMM_GMRES 1
 #define DIRECT_GMRES 0
@@ -358,7 +358,7 @@ std::vector<double> direct_val;
 
 #if CONST_EL && FMM_GMRES
     std::vector<double> b_goals(tgt_elements.size(),1);
-    std::vector<double> init_guess(tgt_elements.size(),100);
+    std::vector<double> init_guess(tgt_elements.size(),0.0001);
     std::vector<double> solution(tgt_elements.size(),0);
     FMM_GMRES_Solver fmm_solv(fmm,b_goals,init_guess,solution);
     double tol = 1e-8;

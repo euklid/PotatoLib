@@ -49,6 +49,17 @@ private:
     bool m_has_precond;
 };
 
+class NoPrecond
+{
+public:
+    NoPrecond(){}
+    arma::vec solve(arma::vec const & vec)
+    {
+        return vec;
+    }
+};
+
+
 class Precond
 {
 public:
@@ -106,6 +117,7 @@ private:
         {
             arma::mat P;
             assert(arma::lu(m_L[i],m_U[i],P,m_prec->at(i)));
+            assert(arma::norm(P.t()*m_L[i]*m_U[i] - m_prec->at(i)) < 1e-3);
             unsigned int block_size = P.n_cols;
             arma::uvec perm(block_size);
             for(unsigned int j = 0; j < block_size; j++)
@@ -113,7 +125,6 @@ private:
                 perm(j) = j;
             }
             m_P[i] = arma::conv_to<arma::uvec >::from(P*perm);
-            std::cout << m_P[i] << std::endl;
         }
     }
     
@@ -138,10 +149,13 @@ private:
             {
                 block_vec(j) = vec(block_start+m_P[i](j));
             }
+            arma::vec test_vec = vec.subvec(block_start,block_start+block_size-1);
             // solve for y and x and assign to solution
             arma::vec y,x;
             arma::auxlib::solve_tr(y,m_L[i],block_vec,1); //0: upper, 1:lower
             arma::auxlib::solve_tr(x,m_U[i],y,0);
+            assert(arma::norm(m_prec->at(i)*x - test_vec) < 1e-3);
+            std::cout << test_vec << std::endl;
             sol.subvec(block_start,block_start+block_size-1) = x;
         }
     }
@@ -176,12 +190,18 @@ void FMM_GMRES_Solver::solve(int max_iterations, int m, double &tolerance)
     arma::vec b(m_boundary_goals);
     arma::mat H(m+1,m+1);
     Precond M(m_fmm);
+    NoPrecond M2;
     
-    GMRES<Operator,
+    /*GMRES<Operator,
           arma::vec,
           Precond,
           arma::mat,
-          double>(A, x, b, M, H, m, max_iterations, tolerance);
+          double>(A, x, b, M, H, m, max_iterations, tolerance); */
+    GMRES<Operator,
+          arma::vec,
+          NoPrecond,
+          arma::mat,
+          double>(A, x, b, M2, H, m, max_iterations, tolerance);
     
     //output result
     for(unsigned int i = 0; i<m_boundary_goals.size(); i++)
