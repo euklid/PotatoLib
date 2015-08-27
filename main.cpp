@@ -362,7 +362,7 @@ std::vector<double> direct_val;
     std::vector<double> solution(tgt_elements.size(),0);
     FMM_GMRES_Solver fmm_solv(fmm,b_goals,init_guess,solution);
     double tol = 1e-8;
-    fmm_solv.solve(100,100,tol);
+    fmm_solv.solve(100,15,tol);
     
     for(int i = 0; i<solution.size(); i++)
     {
