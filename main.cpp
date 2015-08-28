@@ -8,17 +8,120 @@
 #include "fmm_gmres_solver.h"
 #include "constant_element_2d.h"
 #include "kernel_laplace_constant_element_2d.h"
-#include <time.h>
+
+/*
+ * For getRealTime()
+ * Author:  David Robert Nadeau
+ * Site:    http://NadeauSoftware.com/
+ * License: Creative Commons Attribution 3.0 Unported License
+ *          http://creativecommons.org/licenses/by/3.0/deed.en_US
+ */
+#if defined(_WIN32)
+#include <Windows.h>
+
+#elif defined(__unix__) || defined(__unix) || defined(unix) || (defined(__APPLE__) && defined(__MACH__))
+#include <unistd.h>	/* POSIX flags */
+#include <time.h>	/* clock_gettime(), time() */
+#include <sys/time.h>	/* gethrtime(), gettimeofday() */
+
+#if defined(__MACH__) && defined(__APPLE__)
+#include <mach/mach.h>
+#include <mach/mach_time.h>
+#endif
+
+#else
+#error "Unable to define getRealTime( ) for an unknown OS."
+#endif
+
+/**
+ * Returns the real time, in seconds, or -1.0 if an error occurred.
+ *
+ * Time is measured since an arbitrary and OS-dependent start time.
+ * The returned real time is only useful for computing an elapsed time
+ * between two calls to this function.
+ */
+double getRealTime( )
+{
+#if defined(_WIN32)
+	FILETIME tm;
+	ULONGLONG t;
+#if defined(NTDDI_WIN8) && NTDDI_VERSION >= NTDDI_WIN8
+	/* Windows 8, Windows Server 2012 and later. ---------------- */
+	GetSystemTimePreciseAsFileTime( &tm );
+#else
+	/* Windows 2000 and later. ---------------------------------- */
+	GetSystemTimeAsFileTime( &tm );
+#endif
+	t = ((ULONGLONG)tm.dwHighDateTime << 32) | (ULONGLONG)tm.dwLowDateTime;
+	return (double)t / 10000000.0;
+
+#elif (defined(__hpux) || defined(hpux)) || ((defined(__sun__) || defined(__sun) || defined(sun)) && (defined(__SVR4) || defined(__svr4__)))
+	/* HP-UX, Solaris. ------------------------------------------ */
+	return (double)gethrtime( ) / 1000000000.0;
+
+#elif defined(__MACH__) && defined(__APPLE__)
+	/* OSX. ----------------------------------------------------- */
+	static double timeConvert = 0.0;
+	if ( timeConvert == 0.0 )
+	{
+		mach_timebase_info_data_t timeBase;
+		(void)mach_timebase_info( &timeBase );
+		timeConvert = (double)timeBase.numer /
+			(double)timeBase.denom /
+			1000000000.0;
+	}
+	return (double)mach_absolute_time( ) * timeConvert;
+
+#elif defined(_POSIX_VERSION)
+	/* POSIX. --------------------------------------------------- */
+#if defined(_POSIX_TIMERS) && (_POSIX_TIMERS > 0)
+	{
+		struct timespec ts;
+#if defined(CLOCK_MONOTONIC_PRECISE)
+		/* BSD. --------------------------------------------- */
+		const clockid_t id = CLOCK_MONOTONIC_PRECISE;
+#elif defined(CLOCK_MONOTONIC_RAW)
+		/* Linux. ------------------------------------------- */
+		const clockid_t id = CLOCK_MONOTONIC_RAW;
+#elif defined(CLOCK_HIGHRES)
+		/* Solaris. ----------------------------------------- */
+		const clockid_t id = CLOCK_HIGHRES;
+#elif defined(CLOCK_MONOTONIC)
+		/* AIX, BSD, Linux, POSIX, Solaris. ----------------- */
+		const clockid_t id = CLOCK_MONOTONIC;
+#elif defined(CLOCK_REALTIME)
+		/* AIX, BSD, HP-UX, Linux, POSIX. ------------------- */
+		const clockid_t id = CLOCK_REALTIME;
+#else
+		const clockid_t id = (clockid_t)-1;	/* Unknown. */
+#endif /* CLOCK_* */
+		if ( id != (clockid_t)-1 && clock_gettime( id, &ts ) != -1 )
+			return (double)ts.tv_sec +
+				(double)ts.tv_nsec / 1000000000.0;
+		/* Fall thru. */
+	}
+#endif /* _POSIX_TIMERS */
+
+	/* AIX, BSD, Cygwin, HP-UX, Linux, OSX, POSIX, Solaris. ----- */
+	struct timeval tm;
+	gettimeofday( &tm, NULL );
+	return (double)tm.tv_sec + (double)tm.tv_usec / 1000000.0;
+#else
+	return -1.0;		/* Failed. */
+#endif
+}
 
 
 
-#define POINT 0
-#define CONST_EL 1
-#define OUTPUT_FMM 1
-#define OUTPUT_COMP 0
-#define FMM_GMRES 1
+#define POINT 1
+#define CONST_EL 0
+#define OUTPUT_FMM 0
+#define OUTPUT_COMP 1
+#define FMM_GMRES 0
 #define DIRECT_GMRES 0
 #define DIRECT_SOLVE 0
+
+#define TIMING 1
 
 void read_fmm_config(char* filename,
                      unsigned int & exp_terms,
@@ -175,13 +278,9 @@ std::vector<double> direct_method_points(char* element_data)
     
     file.close();
     tgt_val.resize(tgt_x.size(),0);
-    
-    timespec  time_dir_s, time_dir_e;
-    time_t  dir_sec;
-    long  dir_n_sec;
-  
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&time_dir_s);
-    
+#if TIMING
+	double time_start = getRealTime();
+#endif
     //compute all interactions directly
     unsigned int num_tgt = tgt_x.size();
     unsigned int num_src = src_val.size();
@@ -205,16 +304,13 @@ std::vector<double> direct_method_points(char* element_data)
         }
         tgt_val[tgt] = val;
     }
-    
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&time_dir_e);
-    dir_sec = time_dir_e.tv_sec-time_dir_s.tv_sec;
-    dir_n_sec = std::max(time_dir_e.tv_nsec - time_dir_s.tv_nsec,
-                         1000000000l - (time_dir_e.tv_nsec - time_dir_s.tv_nsec)) ;
+#if TIMING
+    double time_end = getRealTime();
     
     std::cout << "Direct method with " << num_src << " sources and " 
-            << num_tgt << " targets took " << dir_sec << " seconds and "
-            << dir_n_sec << " nanoseconds" << std::endl;
-    
+            << num_tgt << " targets took " << time_end-time_start << " seconds "
+			<< std::endl;
+#endif
     
     return tgt_val;
 }
@@ -226,11 +322,9 @@ void direct_method_elements(std::vector<Element*> const & src_el,
     unsigned int num_tgt_el = tgt_el.size();
     KernLapConstEl2D kernel;
     
-    timespec  time_dir_s, time_dir_e;
-    time_t  dir_sec;
-    long  dir_n_sec;
-  
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&time_dir_s);
+#if TIMING
+    double time_start = getRealTime();
+#endif
     
     for(unsigned int tgt = 0; tgt < num_tgt_el; tgt++)
     {
@@ -244,14 +338,13 @@ void direct_method_elements(std::vector<Element*> const & src_el,
         t->set_target_value(val);
     }
     
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&time_dir_e);
-    dir_sec = time_dir_e.tv_sec-time_dir_s.tv_sec;
-    dir_n_sec = std::max(time_dir_e.tv_nsec - time_dir_s.tv_nsec,
-                         1000000000l - (time_dir_e.tv_nsec - time_dir_s.tv_nsec)) ;
+#if TIMING
+    double time_end = getRealTime();
     
     std::cout << "Direct method with " << num_src_el << " sources and " 
-            << num_tgt_el << " targets took " << dir_sec << " seconds and "
-            << dir_n_sec << " nanoseconds" << std::endl;
+            << num_tgt_el << " targets took " << time_end - time_start << " seconds"
+            << std::endl;
+#endif
 }
 
 int main(int argc, char** argv)
@@ -267,10 +360,6 @@ int main(int argc, char** argv)
         std::cerr << "no fmm configuration provided" << std::endl;
         return -1;
     }
-   
-    struct timespec time_fmm_s, time_fmm_e, time_dir_s, time_dir_e;
-    time_t fmm_sec, dir_sec;
-    long fmm_n_sec, dir_n_sec;
     
     std::vector<Element*> src_elements, tgt_elements;
     unsigned int exp_terms, loc_terms, max_cell_elements;
@@ -290,7 +379,7 @@ int main(int argc, char** argv)
     Laplace2DKernel laplace;
     fmm.set_kernel(laplace);
     
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&time_fmm_s);
+    double time_start = getRealTime();
     fmm.calculate();
 #endif
     
@@ -304,20 +393,20 @@ int main(int argc, char** argv)
               src_eq_tgt);
     KernLapConstEl2D const_lap2d;
     fmm.set_kernel(const_lap2d);
+#if TIMING
+    double time_start = getRealTime();
+#endif
     
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&time_fmm_s);
     fmm.calculate();
     
 #endif
-    
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&time_fmm_e);
-    fmm_sec = time_fmm_e.tv_sec-time_fmm_s.tv_sec;
-    fmm_n_sec = std::max(time_fmm_e.tv_nsec - time_fmm_s.tv_nsec,1000000000l - time_fmm_e.tv_nsec - time_fmm_s.tv_nsec);
+#if TIMING
+    double time_end = getRealTime();
     
     std::cout << "FMM with " << src_elements.size() << " sources and " 
-            << tgt_elements.size() << " targets took " << fmm_sec << " seconds and "
-            << fmm_n_sec << " nanoseconds" << std::endl;
-    
+            << tgt_elements.size() << " targets took " << time_end - time_start << " seconds "
+			<< std::endl;
+#endif
 
 #if OUTPUT_FMM
 
