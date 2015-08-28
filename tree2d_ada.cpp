@@ -98,8 +98,13 @@ void Tree2D_Ada::generate_interaction_lists()
 
 void Tree2D_Ada::generate_lists134(Cell * const cell, Cell * const neighbor)
 {
-    std::vector<Cell*> stack;
-    stack.push_back(neighbor);
+    if(neighbor->is_leaf())
+    {
+        // don't go any further, just add to direct list
+        cell->add_to_list(neighbor,0);
+        neighbor->add_to_list(cell,0);
+        return;
+    }
     
     // the following two vectors determine the minimal and maximal positions
     // in every direction in the level grid of the cell in relative depth to 
@@ -108,6 +113,9 @@ void Tree2D_Ada::generate_lists134(Cell * const cell, Cell * const neighbor)
     std::vector<Point> cell_max_pos;
     cell_min_pos.push_back(cell->get_level_grid_position());
     cell_max_pos.push_back(cell->get_level_grid_position());
+    
+    // start directly with neighbor's children
+    std::vector<Cell*> stack(neighbor->get_children());
     
     while(!stack.empty())
     {
