@@ -91,9 +91,9 @@ void Tree2D::generate_cells(int max_elements)
     }
 }
 
-Point lazy_get_set_cell_grid_pos(Cell* cell,
-                                 unsigned int lvl,
-                                 Cell const * const root)
+Point Tree2D::lazy_get_set_cell_grid_pos(Cell* cell,
+                                        unsigned int lvl,
+                                        Cell const * const root)
 {
     Point cell_grid_pos(cell->get_dimension());
     if (cell->has_level_grid_position())

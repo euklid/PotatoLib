@@ -25,10 +25,14 @@ public:
     virtual Tree_Iterator* upward_iterator();
     virtual Tree_Iterator* downward_iterator();
     
-private:
+    static Point lazy_get_set_cell_grid_pos(Cell* cell,
+                                            unsigned int lvl,
+                                            Cell const * const root);
+    
+protected:
     virtual Tree_Iterator* bfs_iterator();
     void generate_cells(int max_elements);
-    void generate_interaction_lists();
+    virtual void generate_interaction_lists();
     bool m_built;
 };
 

@@ -144,7 +144,7 @@ void Cell::init_empty_lists(unsigned int num_lists)
     m_lists = std::vector<std::map<unsigned int, Cell*> >(num_lists,std::map<unsigned int, Cell*>());
 }
 
-void Cell::add_to_list(Cell* cell, unsigned int list_number)
+void Cell::add_to_list(Cell* const cell, unsigned int list_number)
 {
     assert(m_lists.size() > list_number);
     m_lists[list_number].insert(std::make_pair(cell->get_id(),cell));

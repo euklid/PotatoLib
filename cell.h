@@ -46,7 +46,7 @@ public:
     //virtual void add_to_direct_list(Cell* cell);
     
     virtual void init_empty_lists(unsigned int num_lists);
-    virtual void add_to_list(Cell* cell, unsigned int list_number);
+    virtual void add_to_list(Cell* const cell, unsigned int list_number);
     virtual std::vector<Cell*> get_list(unsigned int list_number) const;
     virtual std::vector<unsigned int> get_list_ids(unsigned int list_number) const;
     //virtual std::vector<Cell*> get_interaction_list() const;
