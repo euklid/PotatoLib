@@ -42,7 +42,9 @@ Point Tree::get_cell_grid_pos(Point const & cell_center,
                        Point const & root_cell_center,
                        double root_cell_size)
 {
+#if DEBUG
     assert(cell_center.get_dimension() == root_cell_center.get_dimension());
+#endif
     Point center_shift(root_cell_center);
     
     for (int i = 0; i<center_shift.get_dimension(); i++) {

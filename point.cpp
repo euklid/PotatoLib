@@ -51,21 +51,27 @@ double Point::max_norm_dist(const Point &p1, const Point & p2)
 
 const double & Point::operator[](unsigned int coord) const
 {
+#if DEBUG
     assert(coord < m_dim);
     assert(m_coord.size() > coord);
+#endif
     return m_coord[coord];
 }
 
 double & Point::operator[](unsigned int coord)
 {
+#if DEBUG
     assert(coord < m_dim);
     assert(m_coord.size() > coord);
+#endif
     return m_coord[coord];
 }
 
 Point Point::operator+(const Point& p1) const
 {
+#if DEBUG
     assert(m_dim == p1.m_dim);
+#endif
     Point res(m_dim);
     for(int i = 0; i<m_dim; i++)
     {
@@ -76,7 +82,9 @@ Point Point::operator+(const Point& p1) const
 
 Point Point::operator-(const Point& p1) const
 {
+#if DEBUG
     assert(m_dim == p1.m_dim);
+#endif
     Point res(m_dim);
     for(int i = 0; i<m_dim; i++)
     {

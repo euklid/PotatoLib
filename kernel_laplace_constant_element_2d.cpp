@@ -13,7 +13,7 @@
 
 double KernLapConstEl2D::direct(Element const & target, Element const & src) const
 {
-    assert(target.get_type() & Element::TARGET && src.get_type() & Element::SOURCE);
+    assert((target.get_type() & Element::TARGET )&& (src.get_type() & Element::SOURCE));
     ConstEl2D const & s = static_cast<const ConstEl2D&>(src);
     Point const & end_node = s.get_end_node();
     Point const & start_node = s.get_start_node();

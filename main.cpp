@@ -11,12 +11,12 @@
 #include "fmm2d_ada.h"
 
 
-#define POINT 0
-#define POINT_ADA 0
+#define POINT 1
+#define POINT_ADA 1
 #define CONST_EL 0
-#define CONST_EL_ADA 1
+#define CONST_EL_ADA 0
 #define OUTPUT_FMM 0
-#define OUTPUT_COMP 1
+#define OUTPUT_COMP 0
 #define FMM_GMRES 0
 #define DIRECT_GMRES 0
 #define DIRECT_SOLVE 0
@@ -350,6 +350,119 @@ void direct_method_elements(std::vector<Element*> const & src_el,
 #endif
 }
 
+void point_fmm(std::vector<Element*> const & src_el,
+               std::vector<Element*> const & tgt_el,
+               int exp_terms,
+               int loc_terms,
+               int max_cell_elements,
+               bool src_eq_tgt)
+{
+    FMM2D fmm(src_el,
+              tgt_el,
+              exp_terms,
+              loc_terms,
+              max_cell_elements,
+              src_eq_tgt);
+    Laplace2DKernel laplace;
+    fmm.set_kernel(laplace);
+    
+#if TIMING
+    double time_start = getRealTime();
+#endif
+    fmm.calculate();
+#if TIMING 
+    double time_end = getRealTime();
+    
+    std::cout << "FMM with " << src_el.size() << " sources and " 
+            << tgt_el.size() << " targets took " << time_end - time_start << " seconds "
+			<< std::endl;
+#endif
+}
+
+void point_ada_fmm(std::vector<Element*> const & src_el,
+               std::vector<Element*> const & tgt_el,
+               int exp_terms,
+               int loc_terms,
+               int max_cell_elements,
+               bool src_eq_tgt)
+{
+    FMM2D_ADA fmm_ada(src_el,
+              tgt_el,
+              exp_terms,
+              loc_terms,
+              max_cell_elements,
+              src_eq_tgt);
+    Laplace2DKernel laplace_ada;
+    fmm_ada.set_kernel(laplace_ada);
+    
+#if TIMING
+    double time_start_ada = getRealTime();
+#endif
+    fmm_ada.calculate();
+#if TIMING
+    double time_end_ada = getRealTime();
+ std::cout << "Adaptive FMM with " << src_el.size() << " sources and " 
+            << tgt_el.size() << " targets took " << time_end_ada - time_start_ada << " seconds "
+			<< std::endl;
+#endif
+}
+
+void const_el_fmm(std::vector<Element*> const & src_el,
+               std::vector<Element*> const & tgt_el,
+               int exp_terms,
+               int loc_terms,
+               int max_cell_elements,
+               bool src_eq_tgt)
+{
+    FMM2D fmm(src_el,
+              src_el,
+              exp_terms,
+              loc_terms,
+              max_cell_elements,
+              src_eq_tgt);
+    KernLapConstEl2D const_lap2d;
+    fmm.set_kernel(const_lap2d);
+#if TIMING
+    double time_start = getRealTime();
+#endif
+    fmm.calculate();
+#if TIMING 
+    double time_end = getRealTime();
+    
+    std::cout << "FMM with " << src_el.size() << " sources and " 
+            << tgt_el.size() << " targets took " << time_end - time_start << " seconds "
+			<< std::endl;
+#endif
+}
+
+void const_el_ada_fmm(std::vector<Element*> const & src_el,
+               std::vector<Element*> const & tgt_el,
+               int exp_terms,
+               int loc_terms,
+               int max_cell_elements,
+               bool src_eq_tgt)
+{
+    FMM2D_ADA fmm_ada(src_el,
+              tgt_el,
+              exp_terms,
+              loc_terms,
+              max_cell_elements,
+              src_eq_tgt);
+    KernLapConstEl2D const_lap2d;
+    fmm_ada.set_kernel(const_lap2d);
+#if TIMING
+    double time_start_ada = getRealTime();
+#endif
+    fmm_ada.calculate();
+#if TIMING
+    double time_end_ada = getRealTime();
+    std::cout << "Adaptive FMM with " << src_el.size() << " sources and "
+            << tgt_el.size() << " targets took " << time_end_ada - time_start_ada << " seconds "
+            << std::endl;
+#endif
+}
+
+
 int main(int argc, char** argv)
 {
     if(argc < 2)
@@ -369,96 +482,52 @@ int main(int argc, char** argv)
     bool src_eq_tgt;
     read_fmm_config(argv[2], exp_terms, loc_terms, max_cell_elements);
             
+#if POINT || POINT_ADA
+    read_point2d_elements(argv[1],src_elements,tgt_elements,src_eq_tgt);
+#endif
+    
 #if POINT
-    read_point2d_elements(argv[1],src_elements,tgt_elements,src_eq_tgt);
-    
-    
-    FMM2D fmm(src_elements,
+    point_fmm(src_elements,
               tgt_elements,
               exp_terms,
               loc_terms,
               max_cell_elements,
               src_eq_tgt);
-    Laplace2DKernel laplace;
-    fmm.set_kernel(laplace);
-    
-    double time_start = getRealTime();
-    fmm.calculate();
 #endif
-    
+
 #if POINT_ADA
-    
-    read_point2d_elements(argv[1],src_elements,tgt_elements,src_eq_tgt);
-    
-    FMM2D_ADA fmm_ada(src_elements,
-              tgt_elements,
-              exp_terms,
-              loc_terms,
-              max_cell_elements,
-              src_eq_tgt);
-    Laplace2DKernel laplace_ada;
-    fmm_ada.set_kernel(laplace_ada);
-    
-#if TIMING
-    double time_start_ada = getRealTime();
-#endif
-    fmm_ada.calculate();
-#if TIMING
-    double time_end_ada = getRealTime();
- std::cout << "Adaptive FMM with " << src_elements.size() << " sources and " 
-            << tgt_elements.size() << " targets took " << time_end_ada - time_start_ada << " seconds "
-			<< std::endl;
-#endif
+    point_ada_fmm(src_elements,
+                  tgt_elements,
+                  exp_terms,
+                  loc_terms,
+                  max_cell_elements,
+                  src_eq_tgt);
 #endif
     
+#if POINT || POINT_ADA
+    std::vector<double> direct_val= direct_method_points(argv[1]);
+#endif
+    
+#if CONST_EL || CONST_EL_ADA
+    read_const2d_elements(argv[1],src_elements,tgt_elements,src_eq_tgt);
+#endif
     
 #if CONST_EL
-    read_const2d_elements(argv[1],src_elements,tgt_elements,src_eq_tgt);
-    FMM2D fmm(src_elements,
-              tgt_elements,
-              exp_terms,
-              loc_terms,
-              max_cell_elements,
-              src_eq_tgt);
-    KernLapConstEl2D const_lap2d;
-    fmm.set_kernel(const_lap2d);
-#if TIMING
-    double time_start = getRealTime();
-#endif
-    
-    fmm.calculate();
-    
+    const_el_fmm(src_elements,
+                 tgt_elements,
+                 exp_terms,
+                 loc_terms,
+                 max_cell_elements,
+                 src_eq_tgt);
 #endif
     
 #if CONST_EL_ADA
-    read_const2d_elements(argv[1],src_elements,tgt_elements,src_eq_tgt);
-    FMM2D_ADA fmm_ada(src_elements,
-              tgt_elements,
-              exp_terms,
-              loc_terms,
-              max_cell_elements,
-              src_eq_tgt);
-    KernLapConstEl2D const_lap2d;
-    fmm_ada.set_kernel(const_lap2d);
-#if TIMING
-    double time_start_ada = getRealTime();
-#endif
-    fmm_ada.calculate();
-#if TIMING
-    double time_end_ada = getRealTime();
- std::cout << "Adaptive FMM with " << src_elements.size() << " sources and " 
-            << tgt_elements.size() << " targets took " << time_end_ada - time_start_ada << " seconds "
-			<< std::endl;
-#endif
-#endif
-    
-    
-#if TIMING && (CONST_EL || POINT)
-    double time_end = getRealTime();
-    
-    std::cout << "FMM with " << src_elements.size() << " sources and " 
-            << tgt_elements.size() << " targets took " << time_end - time_start << " seconds "
-			<< std::endl;
+    const_el_ada_fmm(src_elements,
+                     tgt_elements,
+                     exp_terms,
+                     loc_terms,
+                     max_cell_elements,
+                     src_eq_tgt);
 #endif
 
 #if OUTPUT_FMM
@@ -469,24 +538,12 @@ int main(int argc, char** argv)
     {
         std::cout << (*it)->get_target_value() << std::endl;
     }
-    fmm.recalculate();
-    for(std::vector<Element*>::const_iterator it = tgt_elements.begin(); 
-            it !=tgt_elements.end(); 
-            ++it)
-    {
-        std::cout << (*it)->get_target_value() << std::endl;
-    }
 #endif
     
-std::vector<double> direct_val;
-
-#if POINT || POINT_ADA
-    // direct method to compare
-    direct_val = direct_method_points(argv[1]);
-#endif
     
 #if CONST_EL || CONST_EL_ADA
     unsigned int num_tgt_el = tgt_elements.size();
+    std::vector<double> direct_val;
     direct_val.resize(num_tgt_el,0);
     for(unsigned int i = 0; i<num_tgt_el; i++)
     {
@@ -498,10 +555,29 @@ std::vector<double> direct_val;
     
     //calculate errors and print them
 
-#if (CONST_EL || CONST_EL_ADA) && FMM_GMRES
+#if (CONST_EL || CONST_EL_ADA) && (!CONST_EL || !CONST_EL_ADA) && FMM_GMRES
     std::vector<double> b_goals(tgt_elements.size(),1);
-    std::vector<double> init_guess(tgt_elements.size(),0.0001);
+    std::vector<double> init_guess(tgt_elements.size(),-0.0001);
     std::vector<double> solution(tgt_elements.size(),0);
+#if CONST_EL_ADA
+    FMM2D_ADA fmm(src_el,
+              tgt_el,
+              exp_terms,
+              loc_terms,
+              max_cell_elements,
+              src_eq_tgt);
+#elseif CONST_EL
+    FMM2D fmm(src_el,
+              tgt_el,
+              exp_terms,
+              loc_terms,
+              max_cell_elements,
+              src_eq_tgt);
+#endif
+    
+    KernLapConstEl2D const_lap2d;
+    fmm.set_kernel(const_lap2d);;
+    
     FMM_GMRES_Solver fmm_solv(fmm,b_goals,init_guess,solution);
     double tol = 1e-8;
     fmm_solv.solve(100,15,tol);

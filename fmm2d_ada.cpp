@@ -86,6 +86,8 @@ void FMM2D_ADA::add_locals_list4(Cell * const target)
 
 void FMM2D_ADA::downward_pass()
 {
+    init_precond();
+    
     Tree_Iterator *it = m_tree->downward_iterator();
     
     Cell* cur_cell;

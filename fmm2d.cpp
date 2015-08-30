@@ -103,7 +103,9 @@ void FMM2D::upward_pass()
                                   cur_child->get_center(),
                                   mom_summand,
                                   cur_cell->get_center());
+#if DEBUG
                 assert(mom_summand.size() == m_exp_terms);
+#endif
                 for(int j = 0; j<m_exp_terms; j++)
                 {
                     moments[j] += mom_summand[j];
@@ -115,16 +117,6 @@ void FMM2D::upward_pass()
     delete it;
 }
 
-template<class T>
-void FMM2D::add_moments(std::vector<T> const & summand, std::vector<T> & moments)
-{
-    assert(summand.size() == moments.size());
-    unsigned int num_moments = moments.size();
-    for(unsigned int i = 0; i<num_moments; i++)
-    {
-        moments[i] += summand[i];
-    }
-}
 
 void FMM2D::m2l_downward_pass(Cell* cur_cell)
 {
@@ -248,10 +240,9 @@ void FMM2D::evaluate_far_interactions(Cell* cell)
     }
 }
 
-void FMM2D::downward_pass() 
+
+void FMM2D::init_precond()
 {
-    Tree_Iterator* it = m_tree->downward_iterator();
-    
     if(m_make_prec)
     {
         if(!m_precond.size())
@@ -267,7 +258,13 @@ void FMM2D::downward_pass()
             }
         }
     }
+}
+
+void FMM2D::downward_pass() 
+{
+    init_precond();
     
+    Tree_Iterator* it = m_tree->downward_iterator();
     // level 2 only M2L and direct, no L2L
     Cell* cur_cell;
     

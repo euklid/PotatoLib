@@ -9,7 +9,9 @@ Cell::Cell(unsigned int dimension, double size, Point const & center) :
     m_leaf_block_start_pos(-1),
     m_leaf_number(-1)
 {
+#if DEBUG
     assert(m_size > 0);
+#endif
     m_grid_pos = Point(dimension);
 }
 
@@ -146,13 +148,17 @@ void Cell::init_empty_lists(unsigned int num_lists)
 
 void Cell::add_to_list(Cell* const cell, unsigned int list_number)
 {
+#if DEBUG
     assert(m_lists.size() > list_number);
+#endif
     m_lists[list_number].insert(std::make_pair(cell->get_id(),cell));
 }
 
 std::vector<Cell*> Cell::get_list(unsigned int list_number) const
 {
+#if DEBUG
     assert(list_number < m_lists.size());
+#endif
     std::vector<Cell*> linearized_list;
     std::map<unsigned int, Cell*> const & sel_list = m_lists.at(list_number);
     std::map<unsigned int, Cell*>::const_iterator it = sel_list.begin();
@@ -165,7 +171,9 @@ std::vector<Cell*> Cell::get_list(unsigned int list_number) const
 
 std::vector<unsigned int> Cell::get_list_ids(unsigned int list_number) const
 {
+#if DEBUG
     assert(list_number < m_lists.size());
+#endif
     std::vector<unsigned int> linearized_list_ids;
     std::map<unsigned int, Cell*> const & sel_list = m_lists.at(list_number);
     std::map<unsigned int, Cell*>::const_iterator it = sel_list.begin();
@@ -175,61 +183,6 @@ std::vector<unsigned int> Cell::get_list_ids(unsigned int list_number) const
     }
     return linearized_list_ids;
 }
-
-
-//void Cell::add_to_interaction_list(Cell *cell)
-//{
-//    m_interaction_list.insert(std::make_pair(cell->get_id(),cell));
-//}
-//
-//void Cell::add_to_direct_list(Cell *cell)
-//{
-//    m_direct_list.insert(std::make_pair(cell->get_id(),cell));
-//}
-//
-//std::vector<Cell *> Cell::get_interaction_list() const
-//{
-//    std::vector<Cell*> linearized_interaction_list;
-//    std::map<unsigned int, Cell*>::const_iterator it = m_interaction_list.begin();
-//    for(; it != m_interaction_list.end();  ++it)
-//    {
-//        linearized_interaction_list.push_back(it->second);
-//    }
-//    return linearized_interaction_list;
-//}
-//
-//std::vector<unsigned int> Cell::get_interaction_list_ids() const
-//{
-//    std::vector<unsigned int> linearized_interaction_list_ids;
-//    std::map<unsigned int, Cell*>::const_iterator it = m_interaction_list.begin();
-//    for(; it != m_interaction_list.end();  ++it)
-//    {
-//        linearized_interaction_list_ids.push_back(it->first);
-//    }
-//    return linearized_interaction_list_ids;
-//}
-//
-//std::vector<Cell*> Cell::get_direct_list() const
-//{
-//    std::vector<Cell*> linearized_direct_list;
-//    std::map<unsigned int, Cell*>::const_iterator it = m_direct_list.begin();
-//    for(; it != m_direct_list.end();  ++it)
-//    {
-//        linearized_direct_list.push_back(it->second);
-//    }
-//    return linearized_direct_list;
-//}
-//std::vector<unsigned int> Cell::get_direct_list_ids() const
-//{
-//    std::vector<unsigned int> linearized_direct_list_ids;
-//    std::map<unsigned int, Cell*>::const_iterator it = m_direct_list.begin();
-//    for(; it != m_direct_list.end();  ++it)
-//    {
-//        linearized_direct_list_ids.push_back(it->first);
-//    }
-//    return linearized_direct_list_ids;
-//}
-//
 
 bool Cell::has_level_grid_position() const
 {
@@ -243,7 +196,9 @@ const Point &Cell::get_level_grid_position() const
 
 void Cell::set_level_grid_position(const Point &grid_pos)
 {
+#if DEBUG
     assert(grid_pos.get_dimension() == m_dim);
+#endif
     m_grid_pos = grid_pos;
     m_has_grid_pos = true;
 }

@@ -62,15 +62,18 @@ void Tree2D::generate_cells(int max_elements,int min_level)
         m_cells.push_back(cur_cell);
         cur_cell->set_id(index);
         if (cur_cell->get_level() > m_max_level) {
+#if DEBUG
             assert(cur_cell->get_level() == m_max_level+1);
+#endif
             m_max_level++;
             m_lvl_ids.push_back(std::vector<unsigned int>());
         }
         
         m_lvl_ids[cur_cell->get_level()].push_back(cur_cell->get_id());
-        
+#if DEBUG
         assert(cur_cell->get_id() == m_cells.size()-1);
         assert(m_cells.size()-1 == index);
+#endif
         index++;
         
 	if(cur_cell->number_of_elements() > max_elements || cur_cell->get_level()<min_level)
