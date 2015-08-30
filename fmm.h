@@ -73,7 +73,14 @@ protected:
     virtual void downward_pass() = 0;
     virtual void evaluate() = 0;
     virtual void reset() = 0;
-
+    
+    /**
+     * get smallest cube containing all elements
+     * @param elements all n-dimensional elements
+     * @return pair of cube length and center coordinate
+     */
+    static std::pair<double, Point> get_bounding_cube(std::vector<Element*> const & elements);
+    
     std::vector<Element*> const & m_src_elements;
     std::vector<Element*> const & m_tgt_elements;
     std::vector<Element*> m_elements;

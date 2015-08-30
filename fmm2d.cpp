@@ -116,7 +116,7 @@ void FMM2D::upward_pass()
 }
 
 template<class T>
-void add_moments(std::vector<T> const & summand, std::vector<T> & moments)
+void FMM2D::add_moments(std::vector<T> const & summand, std::vector<T> & moments)
 {
     assert(summand.size() == moments.size());
     unsigned int num_moments = moments.size();
@@ -251,8 +251,6 @@ void FMM2D::evaluate_far_interactions(Cell* cell)
 void FMM2D::downward_pass() 
 {
     Tree_Iterator* it = m_tree->downward_iterator();
-    // level 2 only M2L and direct, no L2L
-    Cell* cur_cell;
     
     if(m_make_prec)
     {
@@ -269,6 +267,9 @@ void FMM2D::downward_pass()
             }
         }
     }
+    
+    // level 2 only M2L and direct, no L2L
+    Cell* cur_cell;
     
     while(it->has_next())
     {
@@ -295,6 +296,7 @@ void FMM2D::downward_pass()
     // there are no level 3 cells
     if(cur_cell->get_level() < 3) 
     {
+        delete it;
         return;
     }
     
@@ -336,6 +338,7 @@ void FMM2D::downward_pass()
             break;
         }
     }
+    delete it;
 }
 
 void FMM2D::evaluate()
@@ -343,51 +346,6 @@ void FMM2D::evaluate()
     // in Liu's version we do the direct evaluation while we are
     // moving the tree downward because of the way the interaction
     // and direct lists are built
-}
-
-/**
- * get smallest cube containing all elements
- * @param elements all n-dimensional elements
- * @return pair of cube length and center coordinate
- */
-std::pair<double, Point> get_bounding_cube(std::vector<Element*> const & elements) 
-{
-    std::vector<Element*>::const_iterator it = elements.begin();
-    Point min, max, center;
-    min = elements.front()->get_position();
-    max = min;
-    for(;it!=elements.end(); ++it) 
-    {
-        Element* cur_el = *it;
-        for(int i = 0; i<min.get_dimension(); i++)
-        {
-            Point cur_el_pos = cur_el->get_position();
-            if (cur_el_pos[i] < min[i])
-            {
-                min[i] = cur_el_pos[i];
-            }
-            if (cur_el_pos[i] > max[i])
-            {
-                max[i] = cur_el_pos[i];
-            }
-        }
-    }
-
-    double max_dist = 0;
-    center = max;
-    for (int i = 0; i< min.get_dimension(); i++) 
-    {
-        double dist = max[i]-min[i];
-        center[i] = (max[i]+min[i])/2;
-        if (dist > max_dist) 
-        {
-            max_dist = dist;
-        }
-    }
-    
-    //extend cube a little bit in all directions to be sure to contain all elements
-    max_dist = 1.05*max_dist;
-    return std::make_pair(max_dist,center);
 }
 
 void FMM2D::reset()
@@ -411,7 +369,4 @@ void FMM2D::reset()
         cur_cell->set_moments(std::vector<double>());
         cur_cell->set_moments_cmp(std::vector<complex_t>());
     }
-         
-    
-    
 }

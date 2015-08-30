@@ -21,7 +21,7 @@ public:
      *  called once, further calls do nothing
      *  @param max_elements maximal number of elements within a cell
      */
-    virtual void build_tree(int max_elements);
+    virtual void build_tree(int max_elements, int min_level = 2);
     virtual Tree_Iterator* upward_iterator();
     virtual Tree_Iterator* downward_iterator();
     
@@ -31,9 +31,10 @@ public:
     
 protected:
     virtual Tree_Iterator* bfs_iterator();
-    void generate_cells(int max_elements);
+    void generate_cells(int max_elements, int min_level);
     virtual void generate_interaction_lists();
     bool m_built;
+    int m_min_level;
 };
 
 class Tree2D_BFS_Iterator : public Tree_Iterator
@@ -65,7 +66,8 @@ class Tree2D_Upward_Code_Iterator : public Tree_Iterator
 {
 public:
     Tree2D_Upward_Code_Iterator(std::vector<std::vector<unsigned int> > const & lvl_ids,
-                                std::vector<Cell*> const & cells);
+                                std::vector<Cell*> const & cells,
+                                int min_level);
     virtual Cell* next();
     virtual bool has_next();
 private:
@@ -74,6 +76,7 @@ private:
     long int m_outer_idx;
     long int m_inner_size;
     long int m_inner_idx;
+    int m_min_level;
     std::vector<Cell*> const & m_cells;
 };
 
@@ -81,7 +84,8 @@ class Tree2D_Downward_Code_Iterator : public Tree_Iterator
 {
 public:
     Tree2D_Downward_Code_Iterator(std::vector<std::vector<unsigned int> > const & lvl_ids,
-                                  std::vector<Cell*> const & cells);
+                                  std::vector<Cell*> const & cells,
+                                  int min_level);
     virtual Cell* next();
     virtual bool has_next();
 private:
@@ -90,6 +94,7 @@ private:
     long int m_outer_idx;
     long int m_inner_size;
     long int m_inner_idx;
+    int m_min_level;
     std::vector<Cell*> const & m_cells;
 };
 

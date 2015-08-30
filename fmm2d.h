@@ -33,6 +33,10 @@ protected:
     virtual void l2l_downward_pass(Cell* cell);
     virtual void direct_downward_pass(Cell* target);
     virtual void evaluate_far_interactions(Cell* cell);
+    
+    template <class T>
+    static void add_moments(std::vector<T> const & summand, 
+                            std::vector<T> & moments);
 
 };
 

@@ -18,7 +18,6 @@ public:
         
 protected:
     virtual void generate_interaction_lists();
-    bool m_built;
     
 private:
     void generate_lists134(Cell * const cell, Cell * const neighbor);

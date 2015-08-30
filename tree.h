@@ -15,7 +15,7 @@ public:
                                    double root_cell_size);
     Tree(unsigned int dim);
     virtual void set_root(Cell* root);
-    virtual void build_tree(int max_elements) = 0;
+    virtual void build_tree(int max_elements, int min_level = 2) = 0;
     virtual Cell* get_root();
     virtual const Cell* get_root() const;
     virtual const std::vector<Cell*> & get_leaves() const;

@@ -106,3 +106,43 @@ const std::vector<unsigned int> & FMM::get_prec_block_starts() const
 {
     return m_prec_block_starts;
 }
+
+std::pair<double, Point> FMM::get_bounding_cube(std::vector<Element*> const & elements) 
+{
+    std::vector<Element*>::const_iterator it = elements.begin();
+    Point min, max, center;
+    min = elements.front()->get_position();
+    max = min;
+    for(;it!=elements.end(); ++it) 
+    {
+        Element* cur_el = *it;
+        for(int i = 0; i<min.get_dimension(); i++)
+        {
+            Point cur_el_pos = cur_el->get_position();
+            if (cur_el_pos[i] < min[i])
+            {
+                min[i] = cur_el_pos[i];
+            }
+            if (cur_el_pos[i] > max[i])
+            {
+                max[i] = cur_el_pos[i];
+            }
+        }
+    }
+
+    double max_dist = 0;
+    center = max;
+    for (int i = 0; i< min.get_dimension(); i++) 
+    {
+        double dist = max[i]-min[i];
+        center[i] = (max[i]+min[i])/2;
+        if (dist > max_dist) 
+        {
+            max_dist = dist;
+        }
+    }
+    
+    //extend cube a little bit in all directions to be sure to contain all elements
+    max_dist = 1.05*max_dist;
+    return std::make_pair(max_dist,center);
+}

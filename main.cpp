@@ -8,6 +8,20 @@
 #include "fmm_gmres_solver.h"
 #include "constant_element_2d.h"
 #include "kernel_laplace_constant_element_2d.h"
+#include "fmm2d_ada.h"
+
+
+#define POINT 0
+#define POINT_ADA 1
+#define CONST_EL 0
+#define OUTPUT_FMM 0
+#define OUTPUT_COMP 1
+#define FMM_GMRES 0
+#define DIRECT_GMRES 0
+#define DIRECT_SOLVE 0
+
+#define TIMING 1
+
 
 /*
  * For getRealTime()
@@ -110,18 +124,6 @@ double getRealTime( )
 	return -1.0;		/* Failed. */
 #endif
 }
-
-
-
-#define POINT 1
-#define CONST_EL 0
-#define OUTPUT_FMM 0
-#define OUTPUT_COMP 1
-#define FMM_GMRES 0
-#define DIRECT_GMRES 0
-#define DIRECT_SOLVE 0
-
-#define TIMING 1
 
 void read_fmm_config(char* filename,
                      unsigned int & exp_terms,
@@ -383,6 +385,32 @@ int main(int argc, char** argv)
     fmm.calculate();
 #endif
     
+#if POINT_ADA
+    
+    read_point2d_elements(argv[1],src_elements,tgt_elements,src_eq_tgt);
+    
+    FMM2D_ADA fmm_ada(src_elements,
+              tgt_elements,
+              exp_terms,
+              loc_terms,
+              max_cell_elements,
+              src_eq_tgt);
+    Laplace2DKernel laplace_ada;
+    fmm_ada.set_kernel(laplace_ada);
+    
+#if TIMING
+    double time_start_ada = getRealTime();
+#endif
+    fmm_ada.calculate();
+#if TIMING
+    double time_end_ada = getRealTime();
+ std::cout << "Adaptive FMM with " << src_elements.size() << " sources and " 
+            << tgt_elements.size() << " targets took " << time_end_ada - time_start_ada << " seconds "
+			<< std::endl;
+#endif
+#endif
+    
+    
 #if CONST_EL
     read_const2d_elements(argv[1],src_elements,tgt_elements,src_eq_tgt);
     FMM2D fmm(src_elements,
@@ -400,7 +428,7 @@ int main(int argc, char** argv)
     fmm.calculate();
     
 #endif
-#if TIMING
+#if TIMING && (CONST_EL || POINT)
     double time_end = getRealTime();
     
     std::cout << "FMM with " << src_elements.size() << " sources and " 
@@ -427,7 +455,7 @@ int main(int argc, char** argv)
     
 std::vector<double> direct_val;
 
-#if POINT
+#if POINT || POINT_ADA
     // direct method to compare
     direct_val = direct_method_points(argv[1]);
 #endif

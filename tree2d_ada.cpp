@@ -7,6 +7,10 @@
 
 #include "tree2d_ada.h"
 
+#if DEBUG
+#include <iostream>
+#endif
+
 Tree2D_Ada::Tree2D_Ada()
 : Tree2D()
 {}
@@ -30,7 +34,7 @@ void Tree2D_Ada::generate_interaction_lists()
     }
     
     //iterate through the tree to set all lists
-    for (unsigned int i = 2; i <= m_max_level; i++)
+    for (unsigned int i = m_min_level; i <= m_max_level; i++)
     {
         std::vector<unsigned int> & lvl_cells = m_lvl_ids[i];
         std::vector<unsigned int> & lvl_father_cells = m_lvl_ids[i - 1];
@@ -78,7 +82,7 @@ void Tree2D_Ada::generate_interaction_lists()
                     else if (cur_cell->is_leaf())
                     {
                         // the "neighbor" is cell itself --> add to list1
-                        if(cur_cell == children_it)
+                        if(cur_cell == *children_it)
                         {
                             cur_cell->add_to_list(cur_cell,0);
                         }
@@ -87,11 +91,26 @@ void Tree2D_Ada::generate_interaction_lists()
                             // have a look at neighbors of b (and their 
                             // descendents to find out who belongs to list 1 
                             // (direct neighbor) or list 3
-                            generate_lists134(cur_cell, children_it);
+                            generate_lists134(cur_cell, *children_it);
                         }
                     }
                 }
             }
+            
+#ifdef DEBUG
+            std::cout << "Cell " << cur_cell->debug_info() << " lists are"  << std::endl;
+            for(unsigned int list_nr = 0; list_nr < 4; list_nr++)
+            {
+                std::vector<unsigned int> list_ids = cur_cell->get_list_ids(list_nr);
+                std::cout << "list " << list_nr << " : " << std::endl;
+                for(unsigned int i = 0; i< list_ids.size(); i++)
+                {
+                    std::cout << list_ids[i] << " ";
+                }
+                std::cout << std::endl;
+            }
+            std::cout << "\n" << std::endl;
+#endif
         }
     }
 }
@@ -153,8 +172,8 @@ void Tree2D_Ada::generate_lists134(Cell * const cell, Cell * const neighbor)
         bool direct = true;
         for(int i = 0; (i<m_dim) && direct; i++)
         {
-            direct = 0 <= cur_cell_pos[i] - min_cell_pos[i] + 1;
-            direct = direct && (0<= max_cell_pos[i] - min_cell_pos[i] + 2 -cur_cell_pos[i]);
+            direct = (0 <= (cur_cell_pos[i] - min_cell_pos[i] + 1));
+            direct = direct && (0<= (max_cell_pos[i] - min_cell_pos[i] + 2 -cur_cell_pos[i]));
         }
         if(direct)
         {

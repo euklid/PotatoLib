@@ -203,7 +203,7 @@ complex_t Laplace2DKernel::M2element_cmp(const std::vector<complex_t>& moments_i
     const complex_t dist = complex_t(el.get_position()) - moment_center;
     unsigned int num_moments = moments_in.size();
     complex_t fac = complex_t(1,0)/dist;
-    complex_t res = complex_t::log(dist)*moments_in[0] + moments_in[1]*fac;
+    complex_t res = -complex_t::log(dist)*moments_in[0] + moments_in[1]*fac;
     for(int i = 2; i<num_moments; i++)
     {
         fac*=complex_t(i-1)/dist;
