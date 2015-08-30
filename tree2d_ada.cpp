@@ -173,7 +173,7 @@ void Tree2D_Ada::generate_lists134(Cell * const cell, Cell * const neighbor)
         for(int i = 0; (i<m_dim) && direct; i++)
         {
             direct = (0 <= (cur_cell_pos[i] - min_cell_pos[i] + 1));
-            direct = direct && (0<= (max_cell_pos[i] - min_cell_pos[i] + 2 -cur_cell_pos[i]));
+            direct = direct && (0<= (max_cell_pos[i] - cur_cell_pos[i])+1);
         }
         if(direct)
         {
