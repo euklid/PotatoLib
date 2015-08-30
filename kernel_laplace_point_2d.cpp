@@ -186,12 +186,13 @@ std::vector<complex_t> Laplace2DKernel::calc_local_exp_cmp(const std::vector<Ele
     for(unsigned int i = 0; i<num_el; i++)
     {
         complex_t contrib = elements[i]->get_value();
-        const complex_t fac = complex_t(elements[i]->get_position())-loc_center;
-        loc_exps[0] += -contrib*(complex_t::log(fac));
-        loc_exps[1] += (complex_t(1)*contrib)/fac;
+        const complex_t fac = complex_t(1)/(complex_t(elements[i]->get_position())-loc_center);
+        loc_exps[0] += -contrib*(complex_t::log(complex_t(elements[i]->get_position())-loc_center));
+        contrib*=fac;
+        loc_exps[1] += contrib;
         for(int j = 2; j<num_loc_exps; j++)
         {
-            contrib*=complex_t(j-1)/fac;
+            contrib*=complex_t(j-1)*fac;
             loc_exps[j]+= contrib;
         }
     }

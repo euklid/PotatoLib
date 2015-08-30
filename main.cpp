@@ -12,8 +12,9 @@
 
 
 #define POINT 0
-#define POINT_ADA 1
+#define POINT_ADA 0
 #define CONST_EL 0
+#define CONST_EL_ADA 1
 #define OUTPUT_FMM 0
 #define OUTPUT_COMP 1
 #define FMM_GMRES 0
@@ -428,6 +429,30 @@ int main(int argc, char** argv)
     fmm.calculate();
     
 #endif
+    
+#if CONST_EL_ADA
+    read_const2d_elements(argv[1],src_elements,tgt_elements,src_eq_tgt);
+    FMM2D_ADA fmm_ada(src_elements,
+              tgt_elements,
+              exp_terms,
+              loc_terms,
+              max_cell_elements,
+              src_eq_tgt);
+    KernLapConstEl2D const_lap2d;
+    fmm_ada.set_kernel(const_lap2d);
+#if TIMING
+    double time_start_ada = getRealTime();
+#endif
+    fmm_ada.calculate();
+#if TIMING
+    double time_end_ada = getRealTime();
+ std::cout << "Adaptive FMM with " << src_elements.size() << " sources and " 
+            << tgt_elements.size() << " targets took " << time_end_ada - time_start_ada << " seconds "
+			<< std::endl;
+#endif
+#endif
+    
+    
 #if TIMING && (CONST_EL || POINT)
     double time_end = getRealTime();
     
@@ -460,7 +485,7 @@ std::vector<double> direct_val;
     direct_val = direct_method_points(argv[1]);
 #endif
     
-#if CONST_EL
+#if CONST_EL || CONST_EL_ADA
     unsigned int num_tgt_el = tgt_elements.size();
     direct_val.resize(num_tgt_el,0);
     for(unsigned int i = 0; i<num_tgt_el; i++)
@@ -473,7 +498,7 @@ std::vector<double> direct_val;
     
     //calculate errors and print them
 
-#if CONST_EL && FMM_GMRES
+#if (CONST_EL || CONST_EL_ADA) && FMM_GMRES
     std::vector<double> b_goals(tgt_elements.size(),1);
     std::vector<double> init_guess(tgt_elements.size(),0.0001);
     std::vector<double> solution(tgt_elements.size(),0);

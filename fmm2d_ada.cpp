@@ -41,10 +41,11 @@ void FMM2D_ADA::build_tree()
 
 void FMM2D_ADA::moment_to_element_downward_pass(Cell* const target)
 {
-    std::vector<Element*> const & tgt_elements = target->get_target_elements();
     std::vector<Cell*> list3 = target->get_list(2);
-    unsigned int num_tgt_elements = tgt_elements.size();
     unsigned int num_list_elements = list3.size();
+    if(!num_list_elements) return;
+    std::vector<Element*> const & tgt_elements = target->get_target_elements();
+    unsigned int num_tgt_elements = tgt_elements.size();
     for(unsigned int i = 0; i<num_tgt_elements; i++)
     {
         Element* t = tgt_elements[i];

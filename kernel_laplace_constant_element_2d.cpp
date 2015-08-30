@@ -125,16 +125,19 @@ std::vector<complex_t> KernLapConstEl2D::calc_local_exp_cmp(const std::vector<El
         const complex_t log_fac_start = complex_t::log(fac_start);
         
         loc_exps[0] += fac_tangent_norm*(fac_start*(log_fac_start-complex_t(1)) - fac_end*(log_fac_end -complex_t(1)));
-        loc_exps[1] += fac_tangent_norm*(log_fac_start - log_fac_end);
-        loc_exps[2] += fac_tangent_norm*(complex_t(1)/fac_start - complex_t(1)/fac_end);
+        loc_exps[1] += fac_tangent_norm*(log_fac_end-log_fac_start);
         
-        complex_t contrib_p = fac_tangent_norm;
-        complex_t contrib_n = fac_tangent_norm;
+        fac_start = complex_t(1)/fac_start;
+        fac_end = complex_t(1)/fac_end;
+        
+        complex_t contrib_p = fac_tangent_norm*fac_start;
+        complex_t contrib_n = fac_tangent_norm*fac_end;
+        loc_exps[2] += contrib_p - contrib_n;
         
         for(int j = 3; j<num_loc_exps; j++)
         {
-            contrib_p *= complex_t(j-2)/fac_start;
-            contrib_n *= complex_t(j-2)/fac_end;
+            contrib_p *= fac_start*(j-2);
+            contrib_n *= fac_end*(j-2);
             loc_exps[j]+= contrib_p - contrib_n;
         }
     }
