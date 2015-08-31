@@ -560,15 +560,15 @@ int main(int argc, char** argv)
     std::vector<double> init_guess(tgt_elements.size(),-0.0001);
     std::vector<double> solution(tgt_elements.size(),0);
 #if CONST_EL_ADA
-    FMM2D_ADA fmm(src_el,
-              tgt_el,
+    FMM2D_ADA fmm(src_elements,
+              tgt_elements,
               exp_terms,
               loc_terms,
               max_cell_elements,
               src_eq_tgt);
-#elseif CONST_EL
-    FMM2D fmm(src_el,
-              tgt_el,
+#elif CONST_EL
+    FMM2D fmm(src_elements,
+              tgt_elements,
               exp_terms,
               loc_terms,
               max_cell_elements,
