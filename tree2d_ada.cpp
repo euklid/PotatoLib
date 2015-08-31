@@ -206,6 +206,28 @@ void Tree2D_Ada::make_other_levels_lists()
 }
 
 
+void make_list4(Cell * const cell, Cell * const neighbor)
+{
+    std::vector<Cell*> stack;
+    stack.push_back(neighbor);
+    Cell * cur_cell;
+    while(!stack.empty())
+    {
+        cur_cell = stack.back();
+        stack.pop_back();
+        if(cur_cell->is_leaf())
+        {
+            // the bigger cell cell is in list 4 of cur_cell
+            cur_cell->add_to_list(cell,3);
+        } 
+        else
+        {
+            std::vector<Cell*> const & children = cur_cell->get_children();
+            stack.insert(stack.end(),children.begin(),children.end());
+        }
+    }
+}
+
 void Tree2D_Ada::generate_lists134(Cell * const cell, Cell * const neighbor)
 {
     if(neighbor->is_leaf())
@@ -286,12 +308,10 @@ void Tree2D_Ada::generate_lists134(Cell * const cell, Cell * const neighbor)
         {
             // the cur_cell's father was a direct neighbor to cell, otherwise
             // it wouldn't be in the stack. but cur_cell is not a direct 
-            // neighbor to cell --> cur_cell is in list 3 of cell and we don't
-            // care for its children
+            // neighbor to cell --> cur_cell is in list 3 of cell
             cell->add_to_list(cur_cell,2);
-            cur_cell->add_to_list(cell,3);
+            // and all its descendents are in list 4
+            make_list4(cell,cur_cell);
         }
-        
     }
-    
 }

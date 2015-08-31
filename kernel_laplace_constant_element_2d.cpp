@@ -102,7 +102,7 @@ std::vector<complex_t> KernLapConstEl2D::calc_local_exp_cmp(const std::vector<El
     // using recursive multiplication get all exponentiations for a fixed element to compute
     // moments using L_k(z_l) = \sum_{i=1}^n q(e_i)*conj(tangent_normed_i)*{-(k-2)!/(end_i-center)^(k-1) + (k-2)!/(start_i-center)^(k-1)} 
     // for k >=2
-    // We have L_1(z_l) = \sum_{i=1}^n q(e_i)*conj(tangent_normed_i)*{-log(end_i-center) + log(start_i-center) }
+    // We have L_1(z_l) = \sum_{i=1}^n q(e_i)*conj(tangent_normed_i)*{log(end_i-center) - log(start_i-center) }
     // and     L_0(z_l) = \sum_{i=1}^n q(e_i)*conj(tangent_normed_i)*{-((end_i-center)*(log(end_i-center) - 1)) + (start_i-center)*(log(start_i-center)-1) }
     std::vector<complex_t> loc_exps(num_loc_exps,0);
     unsigned int num_el = elements.size();
