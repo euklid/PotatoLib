@@ -115,43 +115,122 @@ Point Tree2D::lazy_get_set_cell_grid_pos(Cell* cell,
     return cell_grid_pos;
 }
 
-void Tree2D::generate_interaction_lists()
+
+
+void Tree2D::init_first_level_lists()
 {
-    // first only like the Liu book
-    for (unsigned int i = m_min_level; i<=m_max_level; i++)
+    if(m_min_level == 0)
+    {
+        m_root->init_empty_lists(3);
+        m_root->add_to_list(m_root,3);
+        return;
+    }
+    std::vector<unsigned int> & lvl_cells = m_lvl_ids[m_min_level];
+    std::vector<unsigned int> & lvl_father_cells = m_lvl_ids[m_min_level - 1];
+    std::vector<unsigned int >::const_iterator it = lvl_cells.begin();
+    std::vector<unsigned int >::const_iterator other_it;
+    for (; it != lvl_cells.end(); ++it)
+    {
+        Cell* cur_cell = m_cells[*it];
+
+        // list 1: direct neighbors,
+        // list 2: interaction list,
+        // list 3: colleagues on same level
+        cur_cell->init_empty_lists(3);
+        assert(cur_cell->get_id() == *it);
+
+        Cell* cur_cell_father = cur_cell->get_father();
+
+        Point cur_cell_grid_pos = lazy_get_set_cell_grid_pos(cur_cell, m_min_level, m_root);
+        Point cur_cell_father_grid_pos = lazy_get_set_cell_grid_pos(cur_cell_father, m_min_level - 1, m_root);
+        for (other_it = lvl_father_cells.begin(); other_it != lvl_father_cells.end(); ++other_it)
+        {
+            Cell* other_cell_father = m_cells[*other_it];
+            Point other_cell_father_grid_pos = lazy_get_set_cell_grid_pos(other_cell_father,
+                                                                          m_min_level - 1,
+                                                                          m_root);
+            if (Point::max_norm_dist(cur_cell_father_grid_pos, other_cell_father_grid_pos) > 1)
+            {
+                continue;
+            }
+            //otherwise we have neighboring father cells (or the own father)
+            //and want to retrieve the other cell's children
+
+            if (other_cell_father->is_leaf())
+            {
+                continue;
+            }
+            std::vector<Cell*> children = other_cell_father->get_children();
+            std::vector<Cell*>::const_iterator children_it = children.begin();
+
+            for (; children_it != children.end(); ++children_it)
+            {
+                Point children_cell_grid_pos = lazy_get_set_cell_grid_pos((*children_it),
+                                                                          m_min_level,
+                                                                          m_root);
+                if (Point::max_norm_dist(children_cell_grid_pos, cur_cell_grid_pos) > 1)
+                {
+                    cur_cell->add_to_list(*children_it, 1);
+                }
+                else 
+                {
+                    if ((*children_it)->is_leaf() || cur_cell->is_leaf() || m_min_level == m_max_level)
+                    {
+                        cur_cell->add_to_list(*children_it, 0);
+                    }
+                    cur_cell->add_to_list(*children_it,2);
+                }
+            }
+        }
+#ifdef DEBUG
+        std::cout << "Cell " << cur_cell->get_id() << " at level " << cur_cell->get_level() << " at " << cur_cell->get_level_grid_position() << " interaction list is" << std::endl;
+        std::vector<unsigned int> interaction_list = cur_cell->get_list_ids(1);
+        for (unsigned int i = 0; i < interaction_list.size(); i++)
+        {
+            std::cout << interaction_list[i] << " ";
+        }
+        std::cout << std::endl;
+        std::cout << "Cell " << cur_cell->get_id() << " direct list is" << std::endl;
+        std::vector<unsigned int> direct_list = cur_cell->get_list_ids(0);
+        for (unsigned int i = 0; i < direct_list.size(); i++)
+        {
+            std::cout << direct_list[i] << " ";
+        }
+        std::cout << "\n" << std::endl;
+#endif
+    }
+}
+
+void Tree2D::make_other_levels_lists()
+{
+    for (unsigned int i = m_min_level+1; i<=m_max_level; i++)
     {
         std::vector<unsigned int> & lvl_cells = m_lvl_ids[i];
-        std::vector<unsigned int> & lvl_father_cells = m_lvl_ids[i-1];
         std::vector<unsigned int >::const_iterator it = lvl_cells.begin();
-        std::vector<unsigned int >::const_iterator other_it;
+        std::vector<Cell*>::const_iterator other_it;
         for (; it!=lvl_cells.end(); ++it)
         {
             Cell* cur_cell = m_cells[*it];
-            cur_cell->init_empty_lists(2);
+            
+            // list 1: direct neighbors,
+            // list 2: interaction list,
+            // list 3: colleagues on same level
+            cur_cell->init_empty_lists(3);
             assert(cur_cell->get_id() == *it);
 
             Cell* cur_cell_father = cur_cell->get_father();
 
             Point cur_cell_grid_pos = lazy_get_set_cell_grid_pos(cur_cell,i,m_root);
-            Point cur_cell_father_grid_pos = lazy_get_set_cell_grid_pos(cur_cell_father,i-1, m_root);
-            for (other_it = lvl_father_cells.begin(); other_it != lvl_father_cells.end(); ++other_it)
+            std::vector<Cell*> father_coll = cur_cell->get_father()->get_list(2);
+            for (other_it = father_coll.begin(); other_it != father_coll.end(); ++other_it)
             {
-                Cell* other_cell_father = m_cells[*other_it];
-                Point other_cell_father_grid_pos = lazy_get_set_cell_grid_pos(other_cell_father,
-                                                                              i-1,
-                                                                              m_root);
-                if (Point::max_norm_dist(cur_cell_father_grid_pos, other_cell_father_grid_pos) > 1)
-                {
-                    continue;
-                }
-                //otherwise we have neighboring father cells (or the own father)
-                //and want to retrieve the other cell's children
-                
+                Cell* other_cell_father = *other_it;
+                                
                 if (other_cell_father->is_leaf())
                 {
                     continue;
                 }
-                std::vector<Cell*> children = other_cell_father->get_children();
+                std::vector<Cell*> const & children = other_cell_father->get_children();
                 std::vector<Cell*>::const_iterator children_it = children.begin();
 
                 for(;children_it != children.end(); ++children_it)
@@ -163,10 +242,14 @@ void Tree2D::generate_interaction_lists()
                     {
                         cur_cell->add_to_list(*children_it,1);
                     }
-                    else if ((*children_it)->is_leaf() || cur_cell->is_leaf() || i == m_max_level)
+                    else 
                     {
-                        cur_cell->add_to_list(*children_it,0);
-                    }
+                        if ((*children_it)->is_leaf() || cur_cell->is_leaf() || i == m_max_level)
+                        {
+                            cur_cell->add_to_list(*children_it,0);
+                        }
+                        cur_cell->add_to_list(*children_it,2);
+                    }  
                 }
             }
 #ifdef DEBUG
@@ -185,9 +268,14 @@ void Tree2D::generate_interaction_lists()
             }
             std::cout << "\n" << std::endl;
 #endif
-            
         }
     }
+}
+
+void Tree2D::generate_interaction_lists()
+{   
+    init_first_level_lists();
+    make_other_levels_lists();
 }
 
 Tree_Iterator *Tree2D::bfs_iterator()
@@ -228,45 +316,6 @@ bool Tree2D_BFS_Iterator::has_next()
 {
     return !m_cell_queue.empty();
 }
-// the following commented code is stupid code
-// if you want to just use the father children links, make a stack of operations
-// so that for each M2M the child values have to be known and the 2 possibilities
-// are that the childs are leafs or their moments need to be computed by M2M, too
-// --> DFS through tree
-// "cropping" only the leaves doesn't give guarantee that father has all children
-// for M2M computation
-
-//Tree2D_Upward_Iterator::Tree2D_Upward_Iterator(Tree2D* tree)
-//{
-//    m_last = NULL;
-//    m_tree = tree;
-//    const std::vector<Cell*> leaf_cells = tree->get_leaves();
-//    for (int i = 0; i<leaf_cells.size(); i++)
-//    {
-//        m_leaf_queue.push(leaf_cells.at(i));
-//    }
-//    m_used_ids = std::vector<bool>(tree->get_cells().size(),false);
-//}
-//
-//Cell* Tree2D_Upward_Iterator::next()
-//{
-//    m_last = m_leaf_queue.front();
-//    m_leaf_queue.pop();
-//    m_used_ids[(m_last->get_id())] = true;
-//    if (!m_used_ids.at(m_last->get_father()->get_id())) {
-//        Cell * const father = m_last->get_father();
-//        if (father->get_level() >= 2) {
-//            m_leaf_queue.push(father);
-//        }
-//    }
-//    return m_last;
-//}
-//
-//bool Tree2D_Upward_Iterator::has_next()
-//{
-//    return !m_leaf_queue.empty();
-//}
-
 
 Tree2D_Upward_Code_Iterator::Tree2D_Upward_Code_Iterator(
         std::vector<std::vector<unsigned int> > const & lvl_ids,

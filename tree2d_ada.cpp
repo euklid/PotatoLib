@@ -24,67 +24,77 @@ Tree2D_Ada::~Tree2D_Ada()
     m_cells.clear();
 }
 
-void Tree2D_Ada::generate_interaction_lists()
+void Tree2D_Ada::init_first_level_lists()
 {
     // initialize lists for all cells
     unsigned int num_cells = m_cells.size();
-    for(unsigned int i = 0; i<num_cells; i++)
+    for (unsigned int i = 0; i < num_cells; i++)
     {
-        m_cells[i]->init_empty_lists(4);
+        // list 1: direct neighbors,
+        // list 2: interaction list,
+        // list 3: non-direct cells of colleagues descendents if cell is leaf
+        // list 4: dual to list 3
+        // list 5: colleagues on same level
+        m_cells[i]->init_empty_lists(5);
     }
-    
-    //iterate through the tree to set all lists
-    for (unsigned int i = m_min_level; i <= m_max_level; i++)
+
+    if (m_min_level == 0)
     {
-        std::vector<unsigned int> & lvl_cells = m_lvl_ids[i];
-        std::vector<unsigned int> & lvl_father_cells = m_lvl_ids[i - 1];
-        std::vector<unsigned int >::const_iterator it = lvl_cells.begin();
-        std::vector<unsigned int >::const_iterator other_it;
-        for (; it != lvl_cells.end(); ++it)
+        m_root->add_to_list(m_root, 4);
+        return;
+    }
+
+    std::vector<unsigned int> & lvl_cells = m_lvl_ids[m_min_level];
+    std::vector<unsigned int> & lvl_father_cells = m_lvl_ids[m_min_level - 1];
+    std::vector<unsigned int >::const_iterator it = lvl_cells.begin();
+    std::vector<unsigned int >::const_iterator other_it;
+    for (; it != lvl_cells.end(); ++it)
+    {
+        Cell* cur_cell = m_cells[*it];
+        assert(cur_cell->get_id() == *it);
+
+        Cell* cur_cell_father = cur_cell->get_father();
+
+        Point cur_cell_grid_pos = lazy_get_set_cell_grid_pos(cur_cell, m_min_level, m_root);
+        Point cur_cell_father_grid_pos = lazy_get_set_cell_grid_pos(cur_cell_father, m_min_level - 1, m_root);
+        for (other_it = lvl_father_cells.begin(); other_it != lvl_father_cells.end(); ++other_it)
         {
-            Cell* cur_cell = m_cells[*it];
-            assert(cur_cell->get_id() == *it);
-
-            Cell* cur_cell_father = cur_cell->get_father();
-
-            Point cur_cell_grid_pos = lazy_get_set_cell_grid_pos(cur_cell, i, m_root);
-            Point cur_cell_father_grid_pos = lazy_get_set_cell_grid_pos(cur_cell_father, i - 1, m_root);
-            for (other_it = lvl_father_cells.begin(); other_it != lvl_father_cells.end(); ++other_it)
+            Cell* other_cell_father = m_cells[*other_it];
+            Point other_cell_father_grid_pos = lazy_get_set_cell_grid_pos(other_cell_father,
+                                                                          m_min_level - 1,
+                                                                          m_root);
+            if (Point::max_norm_dist(cur_cell_father_grid_pos, other_cell_father_grid_pos) > 1)
             {
-                Cell* other_cell_father = m_cells[*other_it];
-                Point other_cell_father_grid_pos = lazy_get_set_cell_grid_pos(other_cell_father,
-                                                                              i - 1,
-                                                                              m_root);
-                if (Point::max_norm_dist(cur_cell_father_grid_pos, other_cell_father_grid_pos) > 1)
-                {
-                    continue;
-                }
-                //otherwise we have neighboring father cells (or the own father)
-                //and want to retrieve the other cell's children
+                continue;
+            }
+            //otherwise we have neighboring father cells (or the own father)
+            //and want to retrieve the other cell's children
 
-                if (other_cell_father->is_leaf())
-                {
-                    continue;
-                }
-                std::vector<Cell*> children = other_cell_father->get_children();
-                std::vector<Cell*>::const_iterator children_it = children.begin();
+            if (other_cell_father->is_leaf())
+            {
+                continue;
+            }
+            std::vector<Cell*> children = other_cell_father->get_children();
+            std::vector<Cell*>::const_iterator children_it = children.begin();
 
-                for (; children_it != children.end(); ++children_it)
+            for (; children_it != children.end(); ++children_it)
+            {
+                Point children_cell_grid_pos = lazy_get_set_cell_grid_pos((*children_it),
+                                                                          m_min_level,
+                                                                          m_root);
+                if (Point::max_norm_dist(children_cell_grid_pos, cur_cell_grid_pos) > 1)
                 {
-                    Point children_cell_grid_pos = lazy_get_set_cell_grid_pos((*children_it),
-                                                                              i,
-                                                                              m_root);
-                    if (Point::max_norm_dist(children_cell_grid_pos, cur_cell_grid_pos) > 1)
-                    {
-                        // well seperated on same level as cur_cell --> list 2
-                        cur_cell->add_to_list(*children_it, 1);
-                    }
-                    else if (cur_cell->is_leaf())
+                    // well seperated on same level as cur_cell --> list 2
+                    cur_cell->add_to_list(*children_it, 1);
+                }
+                else 
+                {
+                    if (cur_cell->is_leaf())
                     {
                         // the "neighbor" is cell itself --> add to list1
-                        if(cur_cell == *children_it)
+                        if (cur_cell == *children_it)
                         {
-                            cur_cell->add_to_list(cur_cell,0);
+                            cur_cell->add_to_list(cur_cell, 0);
                         }
                         else
                         {
@@ -94,12 +104,91 @@ void Tree2D_Ada::generate_interaction_lists()
                             generate_lists134(cur_cell, *children_it);
                         }
                     }
+                    cur_cell->add_to_list(*children_it,4);
                 }
             }
-            
+        }
+
+#ifdef DEBUG
+        std::cout << "Cell " << cur_cell->debug_info() << " lists are" << std::endl;
+        for (unsigned int list_nr = 0; list_nr < 5; list_nr++)
+        {
+            std::vector<unsigned int> list_ids = cur_cell->get_list_ids(list_nr);
+            std::cout << "list " << list_nr << " : " << std::endl;
+            for (unsigned int i = 0; i < list_ids.size(); i++)
+            {
+                std::cout << list_ids[i] << " ";
+            }
+            std::cout << std::endl;
+        }
+        std::cout << "\n" << std::endl;
+#endif
+    }
+}
+
+
+
+void Tree2D_Ada::make_other_levels_lists()
+{
+    for (unsigned int i = m_min_level+1; i<=m_max_level; i++)
+    {
+        std::vector<unsigned int> & lvl_cells = m_lvl_ids[i];
+        std::vector<unsigned int >::const_iterator it = lvl_cells.begin();
+        std::vector<Cell*>::const_iterator other_it;
+        for (; it!=lvl_cells.end(); ++it)
+        {
+            Cell* cur_cell = m_cells[*it];
+            assert(cur_cell->get_id() == *it);
+
+            Cell* cur_cell_father = cur_cell->get_father();
+
+            Point cur_cell_grid_pos = lazy_get_set_cell_grid_pos(cur_cell,i,m_root);
+            std::vector<Cell*> father_coll = cur_cell->get_father()->get_list(4);
+            for (other_it = father_coll.begin(); other_it != father_coll.end(); ++other_it)
+            {
+                Cell* other_cell_father = *other_it;
+                                
+                if (other_cell_father->is_leaf())
+                {
+                    continue;
+                }
+                std::vector<Cell*> const & children = other_cell_father->get_children();
+                std::vector<Cell*>::const_iterator children_it = children.begin();
+
+                for(;children_it != children.end(); ++children_it)
+                {
+                    Point children_cell_grid_pos = lazy_get_set_cell_grid_pos((*children_it),
+                                                                              i,
+                                                                              m_root);
+                    if (Point::max_norm_dist(children_cell_grid_pos, cur_cell_grid_pos) > 1)
+                    {
+                        // well seperated on same level as cur_cell --> list 2
+                        cur_cell->add_to_list(*children_it, 1);
+                    }
+                    else 
+                    {
+                        if (cur_cell->is_leaf())
+                        {
+                            // the "neighbor" is cell itself --> add to list1
+                            if (cur_cell == *children_it)
+                            {
+                                cur_cell->add_to_list(cur_cell, 0);
+                            }
+                            else
+                            {
+                                // have a look at neighbors of b (and their 
+                                // descendents to find out who belongs to list 1 
+                                // (direct neighbor) or list 3
+                                generate_lists134(cur_cell, *children_it);
+                            }
+                        }
+                        cur_cell->add_to_list(*children_it,4);
+                    }
+                }
+            }
 #ifdef DEBUG
             std::cout << "Cell " << cur_cell->debug_info() << " lists are"  << std::endl;
-            for(unsigned int list_nr = 0; list_nr < 4; list_nr++)
+            for(unsigned int list_nr = 0; list_nr < 5; list_nr++)
             {
                 std::vector<unsigned int> list_ids = cur_cell->get_list_ids(list_nr);
                 std::cout << "list " << list_nr << " : " << std::endl;
@@ -113,7 +202,9 @@ void Tree2D_Ada::generate_interaction_lists()
 #endif
         }
     }
+ 
 }
+
 
 void Tree2D_Ada::generate_lists134(Cell * const cell, Cell * const neighbor)
 {

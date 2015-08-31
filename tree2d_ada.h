@@ -17,8 +17,8 @@ public:
     virtual ~Tree2D_Ada();
         
 protected:
-    virtual void generate_interaction_lists();
-    
+    virtual void init_first_level_lists();
+    virtual void make_other_levels_lists();    
 private:
     void generate_lists134(Cell * const cell, Cell * const neighbor);
         

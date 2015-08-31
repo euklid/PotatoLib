@@ -33,6 +33,8 @@ protected:
     virtual Tree_Iterator* bfs_iterator();
     void generate_cells(int max_elements, int min_level);
     virtual void generate_interaction_lists();
+    virtual void init_first_level_lists();
+    virtual void make_other_levels_lists();
     bool m_built;
     int m_min_level;
 };
