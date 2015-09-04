@@ -58,12 +58,15 @@ void FMM2D::build_tree()
     root->set_source_elements(m_src_elements);
     root->set_target_elements(m_tgt_elements);
     m_tree->set_root(root);
+    std::cout << "Building tree ..." << std::endl;
     m_tree->build_tree(m_max_cell_elements);
+    std::cout << "Tree built." << std::endl;
 }
 
 void FMM2D::upward_pass() 
 {
     Tree_Iterator *it = m_tree->upward_iterator();
+    std::cout << "Starting upward pass ..." << std::endl;
     while (it->has_next())
     {
         Cell *cur_cell = it->next();
@@ -115,6 +118,7 @@ void FMM2D::upward_pass()
         }
     }
     delete it;
+    std::cout << "Upward pass finished." << std::endl;
 }
 
 
@@ -268,6 +272,8 @@ void FMM2D::downward_pass()
     // level 2 only M2L and direct, no L2L
     Cell* cur_cell;
     
+    std::cout << "Downward pass started ..." << std::endl;
+    
     while(it->has_next())
     {
         cur_cell = it->next();
@@ -294,6 +300,7 @@ void FMM2D::downward_pass()
     if(cur_cell->get_level() < 3) 
     {
         delete it;
+        std::cout << "Downward pass finished." << std::endl;
         return;
     }
     
@@ -335,6 +342,7 @@ void FMM2D::downward_pass()
             break;
         }
     }
+    std::cout << "Downward pass finished." << std::endl;
     delete it;
 }
 

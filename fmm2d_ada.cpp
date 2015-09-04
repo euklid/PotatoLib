@@ -36,7 +36,9 @@ void FMM2D_ADA::build_tree()
     root->set_source_elements(m_src_elements);
     root->set_target_elements(m_tgt_elements);
     m_tree->set_root(root);
+    std::cout << "Building tree ..." << std::endl;
     m_tree->build_tree(m_max_cell_elements,1);
+    std::cout << "Tree built." << std::endl;
 }
 
 void FMM2D_ADA::moment_to_element_downward_pass(Cell* const target)
@@ -89,7 +91,7 @@ void FMM2D_ADA::downward_pass()
     init_precond();
     
     Tree_Iterator *it = m_tree->downward_iterator();
-    
+    std::cout << "Downward pass started ..." << std::endl;
     Cell* cur_cell;
     while(it->has_next())
     {
@@ -121,6 +123,7 @@ void FMM2D_ADA::downward_pass()
     if(cur_cell->get_level() < 2) 
     {
         delete it;
+        std::cout << "Downward pass finished." << std::endl;
         return;
     }
     
@@ -171,5 +174,6 @@ void FMM2D_ADA::downward_pass()
             break;
         }
     }
+    std::cout << "Downward pass finished." << std::endl;
     delete it;        
 }
