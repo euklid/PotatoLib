@@ -1,9 +1,9 @@
 #!/usr/bin/python
 import random
 
-num_data = 50
-max_leaf = 12
-exp_terms = 6
+num_data = 54000
+max_leaf = 30
+exp_terms = 15
 loc_terms = exp_terms
 
 data_box_size = 60000.0
@@ -17,7 +17,7 @@ for i in range(num_data):
     x = 0
     y = 0
     while(invalid) :
-        x = random.gauss(data_box_size/2,data_box_size/4)
+        x = random.gauss(data_box_size/2,data_box_size/400)
         if x < 0:
             continue
         if x > data_box_size:
@@ -28,7 +28,7 @@ for i in range(num_data):
         if y > data_box_size:
             continue
         invalid = False
-    init_val = 0.01 #random.random()/num_data
+    init_val = 0.1 #random.random()/num_data
     s = 1
     t = 0
     line = str(x) + " " + str(y) + " " + str(s) + " " + str(t) + " " + str(init_val)+"\n"
@@ -45,7 +45,7 @@ for i in range(num_data):
             continue
         if x > data_box_size:
             continue
-        y = random.gauss(data_box_size/2,data_box_size/4)
+        y = random.gauss(data_box_size/2,data_box_size/400)
         if y <0:
             continue
         if y > data_box_size:

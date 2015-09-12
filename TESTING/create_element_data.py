@@ -9,12 +9,12 @@ Created on Tue Aug 25 04:51:34 2015
 
 import math
 
-num_el = 4000
+num_el = 50000
 max_leaf = 30
 exp_terms = 15
 loc_terms = exp_terms
 
-data_box_size = 2000.0
+data_box_size = 1.0
 
 
 f = open('fmm_data.conf','w')
@@ -25,7 +25,7 @@ radius = data_box_size/2
 
 for i in range(num_el):
     x = radius*math.cos(float(i)/num_el*2*math.pi)
-    y = radius*math.sin(float(i)/num_el*2*math.pi)
+    y = 0.5*radius*math.sin(float(i)/num_el*2*math.pi) #elliptic
     line = str(i) + " " + str(x) + " " + str(y) + "\n"
     f.write(line)
 
