@@ -9,14 +9,16 @@
 #include "constant_element_2d.h"
 #include "kernel_laplace_constant_element_2d.h"
 #include "fmm2d_ada.h"
+#include <cstdlib>
+#include <set>
+#include <iomanip>
 
-
-#define POINT 1
-#define POINT_ADA 1
-#define CONST_EL 0
-#define CONST_EL_ADA 0
+#define POINT 0
+#define POINT_ADA 0
+#define CONST_EL 1
+#define CONST_EL_ADA 1
 #define OUTPUT_FMM 0
-#define OUTPUT_COMP 0
+#define OUTPUT_COMP 1
 #define FMM_GMRES 0
 #define DIRECT_GMRES 0
 #define DIRECT_SOLVE 0
@@ -248,7 +250,8 @@ void read_const2d_elements(char* filename,
     file.close();
 }
 
-std::vector<double> direct_method_points(char* element_data)
+std::vector<double> direct_method_points(char* element_data, 
+                                         std::vector<unsigned int> tgt_idx = std::vector<unsigned int>())
 {
     //read data
     std::ifstream file(element_data);
@@ -280,72 +283,145 @@ std::vector<double> direct_method_points(char* element_data)
     }
     
     file.close();
-    tgt_val.resize(tgt_x.size(),0);
+    
+    //determine whether to compute everything or chosen target indexes
+    if (tgt_idx.empty())
+    {
+        tgt_val.resize(tgt_x.size(),0);
+    }
+    else
+    {
+        tgt_val.resize(tgt_idx.size(),0);
+    }
+    
+    
+
 #if TIMING
 	double time_start = getRealTime();
 #endif
     //compute all interactions directly
-    unsigned int num_tgt = tgt_x.size();
+    unsigned int num_tgt;
     unsigned int num_src = src_val.size();
-    for(unsigned int tgt = 0; tgt<num_tgt; tgt++)
+    
+    if(tgt_idx.empty())
     {
-        double val = 0;
-        double tgtx = tgt_x[tgt];
-        double tgty = tgt_y[tgt];
-        double diffx = 0;
-        double diffy = 0;
-        double dist = 0;
-        for(unsigned int src = 0; src<num_src; src++)
+        num_tgt = tgt_x.size();
+        for (unsigned int tgt = 0; tgt < num_tgt; tgt++)
         {
-            diffx = tgtx-src_x[src];
-            diffy = tgty-src_y[src];
-            dist = std::sqrt(diffx*diffx+diffy*diffy);
-            if(dist > 0)
+            double val = 0;
+            double tgtx = tgt_x[tgt];
+            double tgty = tgt_y[tgt];
+            double diffx = 0;
+            double diffy = 0;
+            double dist = 0;
+            for (unsigned int src = 0; src < num_src; src++)
             {
-                val += -src_val[src]*std::log(dist);
+                diffx = tgtx - src_x[src];
+                diffy = tgty - src_y[src];
+                dist = std::sqrt(diffx * diffx + diffy * diffy);
+                if (dist > 0)
+                {
+                    val += -src_val[src] * std::log(dist);
+                }
             }
+            tgt_val[tgt] = val;
         }
-        tgt_val[tgt] = val;
+    }
+    else //only compute at chosen indexes
+    {
+        num_tgt = tgt_idx.size();
+        for (unsigned int idx = 0; idx < num_tgt; idx++)
+        {
+            double val = 0;
+            double tgtx = tgt_x[tgt_idx[idx]];
+            double tgty = tgt_y[tgt_idx[idx]];
+            double diffx = 0;
+            double diffy = 0;
+            double dist = 0;
+            for (unsigned int src = 0; src < num_src; src++)
+            {
+                diffx = tgtx - src_x[src];
+                diffy = tgty - src_y[src];
+                dist = std::sqrt(diffx * diffx + diffy * diffy);
+                if (dist > 0)
+                {
+                    val += -src_val[src] * std::log(dist);
+                }
+            }
+            tgt_val[idx] = val;
+        }
     }
 #if TIMING
     double time_end = getRealTime();
+    double time = time_end-time_start;
+    if(tgt_idx.size()) 
+    {
+        //scale up
+        time *= tgt_x.size()/tgt_idx.size();
+    }
     
     std::cout << "Direct method with " << num_src << " sources and " 
-            << num_tgt << " targets took " << time_end-time_start << " seconds "
+            << tgt_x.size() << " targets took " << time << " seconds "
 			<< std::endl;
+    
 #endif
     
     return tgt_val;
 }
 
 void direct_method_elements(std::vector<Element*> const & src_el,
-                            std::vector<Element*> const & tgt_el)
+                            std::vector<Element*> const & tgt_el,
+                            std::vector<unsigned int> tgt_idx = std::vector<unsigned int>())
 {
     unsigned int num_src_el = src_el.size();
-    unsigned int num_tgt_el = tgt_el.size();
+    unsigned int num_tgt_el;
     KernLapConstEl2D kernel;
     
 #if TIMING
     double time_start = getRealTime();
 #endif
-    
-    for(unsigned int tgt = 0; tgt < num_tgt_el; tgt++)
+    if(tgt_idx.empty())
     {
-        double val = 0;
-        Element* t = tgt_el[tgt];
-        for(unsigned int src = 0; src < num_src_el; src++)
+        num_tgt_el = tgt_el.size();
+        for (unsigned int tgt = 0; tgt < num_tgt_el; tgt++)
         {
-            Element* s = src_el[src];
-            val += s->get_value()*kernel.direct(*t,*s);
+            double val = 0;
+            Element* t = tgt_el[tgt];
+            for (unsigned int src = 0; src < num_src_el; src++)
+            {
+                Element* s = src_el[src];
+                val += s->get_value() * kernel.direct(*t, *s);
+            }
+            t->set_target_value(val);
         }
-        t->set_target_value(val);
+    }
+    else
+    {
+        num_tgt_el = tgt_idx.size();
+        for(unsigned int idx = 0; idx < num_tgt_el; idx++)
+        {
+            double val = 0;
+            Element* t = tgt_el[tgt_idx[idx]];
+            for (unsigned int src = 0; src < num_src_el; src++)
+            {
+                Element* s = src_el[src];
+                val += s->get_value() * kernel.direct(*t, *s);
+            }
+            t->set_target_value(val);
+        }
     }
     
 #if TIMING
     double time_end = getRealTime();
+    double time = time_end-time_start;
+    if(tgt_idx.size())
+    {
+        //scale up
+        time*= tgt_el.size()/tgt_idx.size();
+    }
     
     std::cout << "Direct method with " << num_src_el << " sources and " 
-            << num_tgt_el << " targets took " << time_end - time_start << " seconds"
+            << tgt_el.size() << " targets took " << time << " seconds"
             << std::endl;
 #endif
 }
@@ -462,6 +538,38 @@ void const_el_ada_fmm(std::vector<Element*> const & src_el,
 #endif
 }
 
+std::vector<unsigned int> random_idx_choice(unsigned int range, unsigned int num)
+{
+    assert(range > 10*num);
+    std::set<unsigned int> chosen_idx;
+    double time = getRealTime();
+    time = (time > 0) ? time : -time;
+    unsigned int seed = round(time);
+    srand(seed);
+    while (chosen_idx.size() < num)
+    {
+        unsigned int choice = rand() % range;
+        chosen_idx.insert(choice);
+    }
+    return std::vector<unsigned int>(chosen_idx.begin(),chosen_idx.end());
+}
+
+double mean_square_error(std::vector<double> const & correct_data, 
+                         std::vector<double> const & cmp_data)
+{
+    assert(correct_data.size() == cmp_data.size());
+    unsigned int data_size = correct_data.size();
+    double sum_squares = 0;
+    double sum_squares_diff = 0;
+    for(unsigned int i = 0; i<correct_data.size(); i++)
+    {
+        double diff = correct_data[i] - cmp_data[i];
+        diff *= diff;
+        sum_squares_diff += diff;
+        sum_squares += correct_data[i]*correct_data[i];
+    }
+    return std::sqrt(sum_squares_diff)/std::sqrt(sum_squares);
+}
 
 int main(int argc, char** argv)
 {
@@ -481,7 +589,10 @@ int main(int argc, char** argv)
     unsigned int exp_terms, loc_terms, max_cell_elements;
     bool src_eq_tgt;
     read_fmm_config(argv[2], exp_terms, loc_terms, max_cell_elements);
-            
+    
+    std::vector<double> fmm1_res;
+    std::vector<double> fmm_ada_res;
+    
 #if POINT || POINT_ADA
     read_point2d_elements(argv[1],src_elements,tgt_elements,src_eq_tgt);
 #endif
@@ -493,6 +604,13 @@ int main(int argc, char** argv)
               loc_terms,
               max_cell_elements,
               src_eq_tgt);
+#if OUTPUT_COMP
+    fmm1_res.resize(tgt_elements.size(),0);
+    for(int i = 0; i<tgt_elements.size(); i++)
+    {
+        fmm1_res[i] = tgt_elements[i]->get_target_value();
+    }
+#endif
 #endif
 
 #if POINT_ADA
@@ -502,10 +620,29 @@ int main(int argc, char** argv)
                   loc_terms,
                   max_cell_elements,
                   src_eq_tgt);
+#if OUTPUT_COMP
+    fmm_ada_res.resize(tgt_elements.size(),0);
+    for(int i = 0; i<tgt_elements.size(); i++)
+    {
+        fmm_ada_res[i] = tgt_elements[i]->get_target_value();
+    }
+#endif
 #endif
     
 #if POINT || POINT_ADA
-    std::vector<double> direct_val= direct_method_points(argv[1]);
+    
+    std::vector<double> direct_val;
+    std::vector<unsigned int> tgt_idxes;
+    if(src_elements.size() > 10000 && tgt_elements.size() > 1000)
+    {
+        // don't compute at all targets, make a random choice of 100 targets
+        tgt_idxes = random_idx_choice(tgt_elements.size(),100);
+        direct_val = direct_method_points(argv[1],tgt_idxes);
+    }
+    else
+    {
+        direct_val = direct_method_points(argv[1]);
+    }
 #endif
     
 #if CONST_EL || CONST_EL_ADA
@@ -519,6 +656,13 @@ int main(int argc, char** argv)
                  loc_terms,
                  max_cell_elements,
                  src_eq_tgt);
+#if OUTPUT_COMP
+    fmm1_res.resize(tgt_elements.size(),0);
+    for(int i = 0; i<tgt_elements.size(); i++)
+    {
+        fmm1_res[i] = tgt_elements[i]->get_target_value();
+    }
+#endif
 #endif
     
 #if CONST_EL_ADA
@@ -528,6 +672,13 @@ int main(int argc, char** argv)
                      loc_terms,
                      max_cell_elements,
                      src_eq_tgt);
+#if OUTPUT_COMP
+    fmm_ada_res.resize(tgt_elements.size(),0);
+    for(int i = 0; i<tgt_elements.size(); i++)
+    {
+        fmm_ada_res[i] = tgt_elements[i]->get_target_value();
+    }
+#endif
 #endif
 
 #if OUTPUT_FMM
@@ -542,18 +693,32 @@ int main(int argc, char** argv)
     
     
 #if CONST_EL || CONST_EL_ADA
-    unsigned int num_tgt_el = tgt_elements.size();
     std::vector<double> direct_val;
-    direct_val.resize(num_tgt_el,0);
-    for(unsigned int i = 0; i<num_tgt_el; i++)
+    std::vector<unsigned int> tgt_idxes;
+    if(src_elements.size() > 10000 && tgt_elements.size() > 1000)
     {
-        direct_val[i] = tgt_elements[i]->get_target_value();
+        // don't compute at all targets, make a random choice of 100 targets
+        tgt_idxes = random_idx_choice(tgt_elements.size(),100);
+        direct_method_elements(src_elements,tgt_elements,tgt_idxes);
+        //copy results
+        direct_val.resize(tgt_idxes.size(),0);
+        for(unsigned int i = 0; i<tgt_idxes.size(); i++)
+        {
+            direct_val[i] = tgt_elements[tgt_idxes[i]]->get_target_value();
+        }
     }
-    direct_method_elements(src_elements,tgt_elements);
-
+    else
+    {
+        direct_method_elements(src_elements,tgt_elements);
+        //copy results
+        direct_val.resize(tgt_elements.size(),0);
+        for(unsigned int i = 0; i < tgt_elements.size(); i++)
+        {
+            direct_val[i] = tgt_elements[i]->get_target_value();
+        }
+    }
 #endif
     
-    //calculate errors and print them
 
 #if (CONST_EL || CONST_EL_ADA) && (!CONST_EL || !CONST_EL_ADA) && FMM_GMRES
     std::vector<double> b_goals(tgt_elements.size(),1);
@@ -599,13 +764,55 @@ int main(int argc, char** argv)
     
 #endif
     
+    //calculate errors and print them
+    
 #if OUTPUT_COMP
-    std::cout << direct_val.size() << std::endl;
+    /* std::cout << direct_val.size() << std::endl;
     unsigned int num_tgts = direct_val.size();
     for(int i = 0; i<num_tgts; i++)
     {
         std::cout << "diff: dir: " << direct_val[i] <<" fmm: " << tgt_elements[i]->get_target_value() << " diff: " << direct_val[i]-tgt_elements[i]->get_target_value() << std::endl;
     }
+    */
+    
+    std::vector<double> res1;
+    std::vector<double> res_ada;
+    
+    if(tgt_idxes.empty())
+    {
+       res1 = fmm1_res;
+       res_ada = fmm_ada_res;
+    } 
+    else
+    {
+        if(!fmm1_res.empty())
+        {
+            for(int i = 0; i<tgt_idxes.size(); i++)
+            {
+                res1.push_back(fmm1_res[tgt_idxes[i]]);
+            }
+        }
+        if(!fmm_ada_res.empty())
+        {
+            for(int i = 0; i<tgt_idxes.size(); i++)
+            {
+                res_ada.push_back(fmm_ada_res[tgt_idxes[i]]);
+            }
+        }
+    }
+    if (!fmm1_res.empty())
+    {
+        double msq_error_1 = mean_square_error(direct_val, res1);
+        std::cout << "Mean Square Error of FMM vs. direct is " << std::setprecision(15)
+                << msq_error_1 << std::endl;
+    }
+    if (!fmm_ada_res.empty())
+    {
+        double msq_error_ada = mean_square_error(direct_val, res_ada);
+        std::cout << "Mean Square Error of adaptive FMM vs. direct is " << std::setprecision(15)
+                << msq_error_ada << std::endl;
+    }
+    
 #endif
     std::cout << "Hello World!" << std::endl;
     return 0;
