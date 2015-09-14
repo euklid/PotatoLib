@@ -1,7 +1,7 @@
 
 String filename = "fmm_data.conf";
-String elem_val_in_file = "";
-int imgWidth = 500;
+String elem_val_in_file = "val.out";
+int imgWidth = 600;
 String output_file = "output.png";
 final String[] types = {"POINTS","ELEM"};
 
@@ -176,7 +176,25 @@ void draw_Elements(float[] min_max, Pot_Elem[] elem, String out_file, float min_
   float minY = min_max[3];
   
   int h = int(imgWidth*yrange/xrange);
-  
+  int barWidth = imgWidth/2;
+  int barDist = 0
+  int barHeight = 0;
+  if(values)
+  {
+    // add a bar
+    barDist = 30
+    barHeight = 10;
+    h += barHeight + barDist;
+    
+    for(int i =imgWidth/4; i<(3*imgWidth)/4;i++)
+    {
+      for(int j = h-barHeight; j<h; j++)
+      {
+        pg.
+      }
+    }
+    
+  }
   PGraphics pg = createGraphics(imgWidth,h);
   pg.beginDraw();
   pg.colorMode(RGB,255);
@@ -185,14 +203,11 @@ void draw_Elements(float[] min_max, Pot_Elem[] elem, String out_file, float min_
   for(int i = 0; i< elem.length; i++)
   {
     int start_x = int((elem[i].startX-minX) * (imgWidth-1)/xrange);
-    int start_y = h-1 - int((elem[i].startY-minY) * (h-1)/yrange);
+    int start_y = h-1 - int((elem[i].startY-minY) * (h-1)/yrange)-barHeight - barDist;
     int end_x = int((elem[i].endX-minX) * (imgWidth-1)/xrange);
-    int end_y = h-1 - int((elem[i].endY-minY) * (h-1)/yrange);
+    int end_y = h-1 - int((elem[i].endY-minY) * (h-1)/yrange)-barHeight - barDist;
     int center_x = int((elem[i].centerX-minX) * (imgWidth-1)/xrange);
-    int center_y = h-1 - int((elem[i].centerY-minY) * (h-1)/yrange);
-    println(str(i));
-    println(str(start_x) + ", " + str(start_y));
-    println(str(end_x) + "," + str(end_y));
+    int center_y = h-1 - int((elem[i].centerY-minY) * (h-1)/yrange)-barHeight - barDist;
     if(!elem[i].hasValue)
     {
       if(elem[i].source) {
@@ -201,17 +216,21 @@ void draw_Elements(float[] min_max, Pot_Elem[] elem, String out_file, float min_
       }
       if(elem[i].target) {
         pg.stroke(elem[i].tgt_col);
+        pg.strokeWeight(3);
         pg.point(center_x,center_y);
+        pg.strokeWeight(1);
       }
     } 
     else
     {
       int hue = 0;
       if(min_val < max_val)
-        hue = int((elem[i].value - min_val)/(max_val-min_val)*300);
+        hue = int((elem[i].value - min_val)/(max_val-min_val)*240);
         pg.colorMode(HSB,360);
         pg.stroke(hue,360,360);
+        pg.strokeWeight(2);
         pg.line(start_x,start_y,end_x,end_y);
+        pg.strokeWeight(1);
         pg.colorMode(RGB,255);
     }
   }
@@ -232,7 +251,7 @@ float[] setValues(Pot_Elem[] elem, String filename)
   }
   minVal = float(vals[0]);
   maxVal = minVal;
-  for(int i = 1; i<vals.length; i++)
+  for(int i = 0; i<vals.length; i++)
   {
     String line = vals[i];
     float val = float(line);
