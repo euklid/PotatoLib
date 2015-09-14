@@ -49,15 +49,6 @@ private:
     bool m_has_precond;
 };
 
-class NoPrecond
-{
-public:
-    NoPrecond(){}
-    arma::vec solve(arma::vec const & vec)
-    {
-        return vec;
-    }
-};
 
 /**
  * This class behave like the preconditioner but without doing anything. 
@@ -294,7 +285,7 @@ FMM_GMRES_Solver::FMM_GMRES_Solver(FMM & fmm,
     m_solution(solution)
 {}
 
-void FMM_GMRES_Solver::solve(int max_iterations, int m, double &tolerance)
+void FMM_GMRES_Solver::solve(int & max_iterations, int m, double &tolerance)
 {
     assert(m_fmm.get_src_elements().size() == m_fmm.get_tgt_elements().size());
     Operator A(m_fmm);

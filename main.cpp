@@ -9,6 +9,7 @@
 #include "constant_element_2d.h"
 #include "kernel_laplace_constant_element_2d.h"
 #include "fmm2d_ada.h"
+#include "gmres.h"
 #include <cstdlib>
 #include <set>
 #include <iomanip>
@@ -16,11 +17,11 @@
 #define POINT 0
 #define POINT_ADA 0
 #define CONST_EL 1
-#define CONST_EL_ADA 1
+#define CONST_EL_ADA 0
 #define OUTPUT_FMM 0
-#define OUTPUT_COMP 1
-#define FMM_GMRES 0
-#define DIRECT_GMRES 0
+#define OUTPUT_COMP 0
+#define FMM_GMRES 1
+#define DIRECT_GMRES 1
 #define DIRECT_SOLVE 0
 
 #define TIMING 1
@@ -387,11 +388,11 @@ void direct_method_elements(std::vector<Element*> const & src_el,
         {
             double val = 0;
             Element* t = tgt_el[tgt];
-            for (unsigned int src = 0; src < num_src_el; src++)
-            {
-                Element* s = src_el[src];
+                for (unsigned int src = 0; src < num_src_el; src++)
+                {
+                    Element* s = src_el[src];
                 val += s->get_value() * kernel.direct(*t, *s);
-            }
+                }
             t->set_target_value(val);
         }
     }
@@ -424,6 +425,24 @@ void direct_method_elements(std::vector<Element*> const & src_el,
             << tgt_el.size() << " targets took " << time << " seconds"
             << std::endl;
 #endif
+}
+
+void direct_method_el_coeff_mat(std::vector<Element*> const & src_el,
+                                std::vector<Element*> const & tgt_el,
+                                arma::mat & A_mat)
+{
+    assert(src_el.size() == tgt_el.size());
+    unsigned int num_el = src_el.size();
+    A_mat.resize(num_el,num_el);
+    KernLapConstEl2D kernel;
+    for(unsigned int i =0; i<num_el; i++)
+    {
+        Element *t = tgt_el[i];
+        for(unsigned int j = 0; j<num_el; j++)
+        {
+            A_mat(i,j) = kernel.direct(*t,*(src_el[j]));
+        }
+    }
 }
 
 void point_fmm(std::vector<Element*> const & src_el,
@@ -722,8 +741,8 @@ int main(int argc, char** argv)
 
 #if (CONST_EL || CONST_EL_ADA) && (!CONST_EL || !CONST_EL_ADA) && FMM_GMRES
     std::vector<double> b_goals(tgt_elements.size(),1);
-    std::vector<double> init_guess(tgt_elements.size(),-0.0001);
-    std::vector<double> solution(tgt_elements.size(),0);
+    std::vector<double> init_guess(tgt_elements.size(),0.5);
+    std::vector<double> fmm_gmres_solution(tgt_elements.size(),0);
 #if CONST_EL_ADA
     FMM2D_ADA fmm(src_elements,
               tgt_elements,
@@ -742,25 +761,94 @@ int main(int argc, char** argv)
     
     KernLapConstEl2D const_lap2d;
     fmm.set_kernel(const_lap2d);;
-    
-    FMM_GMRES_Solver fmm_solv(fmm,b_goals,init_guess,solution);
+
+    FMM_GMRES_Solver fmm_solv(fmm,b_goals,init_guess,fmm_gmres_solution);
     double tol = 1e-8;
-    fmm_solv.solve(100,15,tol);
+    int max_iter = 100;
+    double fmm_gmres_start = getRealTime();
+    fmm_solv.solve(max_iter,15,tol);
+    double fmm_gmres_end = getRealTime();
     
-    for(int i = 0; i<solution.size(); i++)
+    std::cout << "FMMGRES found solution after " << fmm_gmres_end-fmm_gmres_start 
+            << " seconds and " << max_iter << " iterations "
+            << "with tolerance " << tol << std::endl;
+    std::cout <<"===" << std::endl;
+    for(int i = 0; i<fmm_gmres_solution.size(); i++)
     {
-        std::cout << solution[i] << std::endl;
+        std::cout << fmm_gmres_solution[i] << std::endl;
     }
-    for(int i = 0; i<solution.size(); i++)
+    std::cout<<"===" << std::endl;
+    for(int i = 0; i<fmm_gmres_solution.size(); i++)
     {
-        src_elements[i]->set_value(solution[i]);
+        src_elements[i]->set_value(fmm_gmres_solution[i]);
     }
     fmm.recalculate();
     std::cout << "after recalc" << std::endl;
-    for(int i = 0; i<solution.size(); i++)
+    for(int i = 0; i<fmm_gmres_solution.size(); i++)
     {
         std::cout << tgt_elements[i]->get_target_value() << std::endl;
     }
+    std::cout << "===" << std::endl;
+    
+#endif
+    
+#if (DIRECT_SOLVE || DIRECT_GMRES) && (CONST_EL || CONST_EL_ADA) && (!CONST_EL || !CONST_EL_ADA) && FMM_GMRES
+    arma::mat A_matrix;
+    direct_method_el_coeff_mat(src_elements,tgt_elements,A_matrix);
+#if DIRECT_SOLVE
+    arma::vec b_dir(b_goals);
+    arma::vec sol_dir;
+    //std::cout << "Armadillo bug prevention: " << sol_dir << std::endl;
+    double time_dir_solve_start = getRealTime();
+    arma::solve(sol_dir,A_matrix,b_dir);
+    double time_dir_solve_end = getRealTime();
+    std::cout << "direct solution after " <<time_dir_solve_end - time_dir_solve_start 
+            << " seconds"<< std::endl;
+    std::cout << "===" << std::endl;
+    std::cout << sol_dir << std::endl;
+    std::cout << "===" << std::endl;
+#endif
+    
+#if DIRECT_GMRES
+    int restart_m = 15;
+    int max_iter_dir = 100;
+    double tol_dir = 1e-8;
+    arma::vec b_gmres(b_goals);
+    arma::vec x;
+    x = arma::conv_to<arma::vec>::from(init_guess);
+    arma::mat H(restart_m+1,restart_m+1);
+    NoPrecond no_pre;
+    std::cout << "Armadillo bug prevention: " << x << std::endl;
+    double time_dir_solve_gmres_start = getRealTime();
+    GMRES<arma::mat,
+          arma::vec,
+          NoPrecond,
+          arma::mat,
+          double>(A_matrix,x,b_gmres,no_pre,H,restart_m,max_iter_dir,tol_dir);
+    double time_dir_solve_gmres_end = getRealTime();
+    std::cout << "got direct GMRES solution after " << time_dir_solve_gmres_end - time_dir_solve_gmres_start
+            << " seconds and " << max_iter << " iterations "
+            << "with tolerance " << tol << std::endl;
+    std::cout << "===" << std::endl;
+    std::cout << std::setprecision(15) << x << std::endl;
+    std::cout << "===" << std::endl;
+    std::cout << std::setprecision(15) << A_matrix*x << std::endl;
+    std::cout << "===" << std::endl;
+#endif
+    
+#if DIRECT_SOLVE
+    double mean_square_gmres_dir = mean_square_error(
+                                        arma::conv_to<std::vector<double> >::from(sol_dir),
+                                        fmm_gmres_solution);
+    std::cout << "Mean Square Error of direct solution vs FMMGMRES is " << mean_square_gmres_dir << std::endl;
+#endif
+    
+#if DIRECT_GMRES
+    double mean_square_gmres_gmres = mean_square_error(
+                                        arma::conv_to<std::vector<double> >::from(x),
+                                        fmm_gmres_solution);
+    std::cout << "Mean Square Error of GMRES solution vs FMMGMRES is " << mean_square_gmres_gmres << std::endl;        
+#endif
     
 #endif
     

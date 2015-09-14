@@ -24,13 +24,23 @@ public:
      *  @param tolerance for convergence, after execution the norm of 
      *  residual
      */
-    void solve(int max_iterations, int m, double & tolerance);
+    void solve(int& max_iterations, int m, double & tolerance);
     
 private:
     FMM & m_fmm;
     std::vector<double> & m_boundary_goals;
     std::vector<double> & m_solution;
     std::vector<double> const & m_init_guess;
+};
+
+class NoPrecond
+{
+public:
+    NoPrecond(){}
+    arma::vec solve(arma::vec const & vec)
+    {
+        return vec;
+    }
 };
 
 
