@@ -741,7 +741,7 @@ int main(int argc, char** argv)
 
 #if (CONST_EL || CONST_EL_ADA) && (!CONST_EL || !CONST_EL_ADA) && FMM_GMRES
     std::vector<double> b_goals(tgt_elements.size(),1);
-    std::vector<double> init_guess(tgt_elements.size(),0.5);
+    std::vector<double> init_guess(tgt_elements.size(),0);
     std::vector<double> fmm_gmres_solution(tgt_elements.size(),0);
 #if CONST_EL_ADA
     FMM2D_ADA fmm(src_elements,
@@ -794,7 +794,10 @@ int main(int argc, char** argv)
     
 #if (DIRECT_SOLVE || DIRECT_GMRES) && (CONST_EL || CONST_EL_ADA) && (!CONST_EL || !CONST_EL_ADA) && FMM_GMRES
     arma::mat A_matrix;
+    double mat_time_start = getRealTime();
     direct_method_el_coeff_mat(src_elements,tgt_elements,A_matrix);
+    double mat_time_end = getRealTime();
+    double mat_time = mat_time_end-mat_time_start;
 #if DIRECT_SOLVE
     arma::vec b_dir(b_goals);
     arma::vec sol_dir;
@@ -802,7 +805,7 @@ int main(int argc, char** argv)
     double time_dir_solve_start = getRealTime();
     arma::solve(sol_dir,A_matrix,b_dir);
     double time_dir_solve_end = getRealTime();
-    std::cout << "direct solution after " <<time_dir_solve_end - time_dir_solve_start 
+    std::cout << "direct solution after " <<time_dir_solve_end - time_dir_solve_start + mat_time
             << " seconds"<< std::endl;
     std::cout << "===" << std::endl;
     std::cout << sol_dir << std::endl;
@@ -826,9 +829,9 @@ int main(int argc, char** argv)
           arma::mat,
           double>(A_matrix,x,b_gmres,no_pre,H,restart_m,max_iter_dir,tol_dir);
     double time_dir_solve_gmres_end = getRealTime();
-    std::cout << "got direct GMRES solution after " << time_dir_solve_gmres_end - time_dir_solve_gmres_start
-            << " seconds and " << max_iter << " iterations "
-            << "with tolerance " << tol << std::endl;
+    std::cout << "got direct GMRES solution after " << time_dir_solve_gmres_end - time_dir_solve_gmres_start + mat_time
+            << " seconds and " << max_iter_dir << " iterations "
+            << "with tolerance " << tol_dir << std::endl;
     std::cout << "===" << std::endl;
     std::cout << std::setprecision(15) << x << std::endl;
     std::cout << "===" << std::endl;

@@ -1,6 +1,6 @@
 
-String filename = "fmm_data.conf";
-String elem_val_in_file = "val.out";
+String filename = "fmm_data_ellipse_elem_50.conf";
+String elem_val_in_file = "";
 int imgWidth = 600;
 String output_file = "output.png";
 final String[] types = {"POINTS","ELEM"};
@@ -177,37 +177,44 @@ void draw_Elements(float[] min_max, Pot_Elem[] elem, String out_file, float min_
   
   int h = int(imgWidth*yrange/xrange);
   int barWidth = imgWidth/2;
-  int barDist = 0
+  int barDist = 0;
   int barHeight = 0;
-  if(values)
+  if(values && (max_val - min_val > 0))
   {
     // add a bar
-    barDist = 30
+    barDist = 30;
     barHeight = 10;
-    h += barHeight + barDist;
-    
-    for(int i =imgWidth/4; i<(3*imgWidth)/4;i++)
-    {
-      for(int j = h-barHeight; j<h; j++)
-      {
-        pg.
-      }
-    }
-    
   }
-  PGraphics pg = createGraphics(imgWidth,h);
+  PGraphics pg = createGraphics(imgWidth,h+barDist+barHeight);
   pg.beginDraw();
   pg.colorMode(RGB,255);
   pg.background(255);
   
+  if(values && (max_val - min_val > 0))
+  {
+    //draw bar
+    pg.colorMode(HSB,360);
+    
+    for(int i =imgWidth/4; i<(3*imgWidth)/4;i++)
+    {
+      for(int j = h+barDist; j<h+barDist+barHeight; j++)
+      {
+        pg.stroke(240*(2*i-imgWidth/2)/imgWidth,360,360);
+        pg.point(i,j);
+      }
+    }
+    
+    pg.colorMode(RGB,255);
+  }
+  
   for(int i = 0; i< elem.length; i++)
   {
     int start_x = int((elem[i].startX-minX) * (imgWidth-1)/xrange);
-    int start_y = h-1 - int((elem[i].startY-minY) * (h-1)/yrange)-barHeight - barDist;
+    int start_y = h-1 - int((elem[i].startY-minY) * (h-1)/yrange);
     int end_x = int((elem[i].endX-minX) * (imgWidth-1)/xrange);
-    int end_y = h-1 - int((elem[i].endY-minY) * (h-1)/yrange)-barHeight - barDist;
+    int end_y = h-1 - int((elem[i].endY-minY) * (h-1)/yrange);
     int center_x = int((elem[i].centerX-minX) * (imgWidth-1)/xrange);
-    int center_y = h-1 - int((elem[i].centerY-minY) * (h-1)/yrange)-barHeight - barDist;
+    int center_y = h-1 - int((elem[i].centerY-minY) * (h-1)/yrange);
     if(!elem[i].hasValue)
     {
       if(elem[i].source) {
